@@ -19,6 +19,16 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Tests
+
+End-to-end browser tests (Playwright) covering content, repo links, anchor
+navigation, and mobile layout:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
 ## Structure
 
 ```
