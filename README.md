@@ -1,6 +1,10 @@
 # Portfolio Site
 
+[![CI](https://github.com/doudoumi14/portfolio-site/actions/workflows/ci.yml/badge.svg)](https://github.com/doudoumi14/portfolio-site/actions/workflows/ci.yml)
+
 Personal portfolio — a single-page site listing projects, skills, and contact info.
+
+![Portfolio site](docs/screenshot.png)
 
 ## Stack
 
