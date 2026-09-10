@@ -1,4 +1,5 @@
-import { GITHUB_USERNAME, projects } from "@/data/projects";
+import { repoUrl } from "@/data/profile";
+import { projects } from "@/data/projects";
 
 export function Projects() {
   return (
@@ -8,7 +9,7 @@ export function Projects() {
         {projects.map((project) => (
           <a
             key={project.name}
-            href={`https://github.com/${GITHUB_USERNAME}/${project.repo}`}
+            href={repoUrl(project.repo)}
             target="_blank"
             rel="noreferrer"
             className="group flex flex-col rounded-2xl border border-black/10 p-6 transition hover:border-black/25 hover:shadow-sm dark:border-white/10 dark:hover:border-white/25"

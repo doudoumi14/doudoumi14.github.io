@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "geekfanmanga — Portfolio",
-  description: "Full-stack developer portfolio — projects, skills, and contact.",
+  title: "Adem Brouri — Full-stack developer",
+  description:
+    "Portfolio of Adem Brouri: full-stack projects in TypeScript and Python, with source on GitHub.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

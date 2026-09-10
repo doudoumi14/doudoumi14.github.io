@@ -7,10 +7,6 @@ export interface Project {
   highlights: string[];
 }
 
-// GITHUB_USERNAME is filled in once the portfolio owner's GitHub
-// account is known; repo links below are relative to it.
-export const GITHUB_USERNAME = "geekfanmanga";
-
 export const projects: Project[] = [
   {
     name: "TaskFlow",
