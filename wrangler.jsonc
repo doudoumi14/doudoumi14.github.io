@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Name must match the Worker Cloudflare already provisioned for this repo,
+  // otherwise `wrangler deploy` creates a second, unrelated Worker.
+  "name": "doudoumi14-github-io",
+  "compatibility_date": "2026-09-10",
+
+  // This site is `output: "export"` in next.config.ts — a pure static build in
+  // out/. Declaring assets here keeps wrangler from auto-detecting "Next.js"
+  // and running the OpenNext server adapter, which expects a standalone
+  // server build that a static export never produces.
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

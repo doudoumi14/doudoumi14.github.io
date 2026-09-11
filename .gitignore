@@ -45,3 +45,6 @@ next-env.d.ts
 test-results/
 playwright-report/
 playwright/.cache/
+
+# wrangler local state and build scratch
+.wrangler/
