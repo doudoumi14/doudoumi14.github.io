@@ -283,28 +283,56 @@ test.describe("Portfolio site", () => {
     await expect(game.getByRole("button", { name: "Start level" })).toBeVisible();
   });
 
-  test("a level can be won and reveals the real achievements", async ({ page }) => {
+  test("starting a level renders the playable canvas and its controls", async ({ page }) => {
     await page.goto("/");
     await waitForHydration(page);
     await page.getByRole("button", { name: /play my career/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
 
-    // The Archer level is deterministic: the steps have one correct order.
-    await game.getByRole("button", { name: /Archer/ }).first().click();
+    await game.getByRole("button", { name: /CAE/ }).first().click();
     await game.getByRole("button", { name: "Start level" }).click();
 
-    for (const step of [
-      "Lead submitted in Salesforce",
-      "Validate required fields",
-      "Enrich with account data",
-      "Route to the right owner",
-      "Trigger approval workflow",
-      "Write back to reporting",
-    ]) {
-      await game.getByRole("button", { name: step, exact: true }).click();
-    }
+    const canvas = game.locator("canvas");
+    await expect(canvas).toBeVisible();
+    const size = await canvas.evaluate((el) => {
+      const c = el as HTMLCanvasElement;
+      return { w: c.width, h: c.height };
+    });
+    expect(size.w).toBeGreaterThan(0);
+    expect(size.h).toBeGreaterThan(0);
 
-    await expect(game.getByText(/level cleared/i)).toBeVisible();
+    for (const label of ["Move left", "Move right", "Jump"]) {
+      await expect(game.getByRole("button", { name: label })).toBeVisible();
+    }
+    await expect(game.getByText(/0\/\d+ frames/)).toBeVisible();
+  });
+
+  test("a level can be played to the flag and reveals the real achievements", async ({ page }) => {
+    test.setTimeout(120_000);
+
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.getByRole("button", { name: /play my career/i }).click();
+    const game = page.getByRole("dialog", { name: "Career mode" });
+
+    await game.getByRole("button", { name: /Archer/ }).first().click();
+    await game.getByRole("button", { name: "Start level" }).click();
+    await expect(game.locator("canvas")).toBeVisible();
+
+    // Run right and jump on a rhythm until the flag is reached.
+    await page.keyboard.down("ArrowRight");
+    const cleared = game.getByText(/level cleared/i);
+    const deadline = Date.now() + 90_000;
+    while (Date.now() < deadline) {
+      if (await cleared.count()) break;
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(140);
+      await page.keyboard.up("Space");
+      await page.waitForTimeout(360);
+    }
+    await page.keyboard.up("ArrowRight");
+
+    await expect(cleared).toBeVisible();
     // The reward panel must surface the figures from the resume.
     await expect(game.getByText("25% ahead of schedule")).toBeVisible();
     await expect(game.getByText("40% less manual data entry")).toBeVisible();

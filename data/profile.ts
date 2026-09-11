@@ -7,7 +7,7 @@ export const profile = {
   email: "adem.brouri.pro@gmail.com",
   github: "doudoumi14",
   linkedin: "https://www.linkedin.com/in/adem-brouri-ing-875b95169/",
-  location: "Montreal, Canada · Open to remote / global hybrid",
+  location: "Montreal, Canada",
 };
 
 export const githubUrl = `https://github.com/${profile.github}`;

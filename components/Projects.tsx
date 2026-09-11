@@ -1,3 +1,4 @@
+import { Icons } from "@/components/Icons";
 import { repoUrl } from "@/data/profile";
 import { projects } from "@/data/projects";
 import { TiltCard } from "./TiltCard";
@@ -6,7 +7,10 @@ export function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-5xl px-6 py-20">
       <div className="reveal">
-        <p className="text-sm font-semibold tracking-wider text-accent uppercase">Code</p>
+        <p className="flex items-center gap-2 text-sm font-semibold tracking-wider text-accent uppercase">
+          <Icons.code className="size-4" />
+          Code
+        </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight">Side Projects</h2>
         <p className="mt-3 max-w-2xl text-muted">
           Hands-on technical work outside the day job — each one fully working, tested end-to-end

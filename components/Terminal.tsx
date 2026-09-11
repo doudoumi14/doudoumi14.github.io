@@ -1,5 +1,6 @@
 "use client";
 
+import { Icons } from "@/components/Icons";
 import { githubUrl, profile } from "@/data/profile";
 import { BANNER, COMMAND_NAMES, runCommand } from "@/data/terminal";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -117,7 +118,7 @@ export function Terminal() {
         }}
         className="fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full border border-line bg-card/90 px-4 py-2.5 text-sm font-medium shadow-lg backdrop-blur transition hover:border-accent hover:text-accent"
       >
-        <span className="font-mono text-accent">&gt;_</span>
+        <Icons.terminal className="size-4 text-accent" />
         <span className="hidden sm:inline">Explore in terminal</span>
         <kbd className="hidden rounded border border-line px-1.5 py-0.5 font-mono text-xs text-subtle sm:inline">
           /

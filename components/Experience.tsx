@@ -1,3 +1,4 @@
+import { Icons } from "@/components/Icons";
 import { experience } from "@/data/experience";
 import { CareerGameLauncher } from "./game/CareerGameLauncher";
 
@@ -5,7 +6,10 @@ export function Experience() {
   return (
     <section id="experience" className="mx-auto max-w-5xl px-6 py-20">
       <div className="reveal">
-        <p className="text-sm font-semibold tracking-wider text-accent uppercase">Career</p>
+        <p className="flex items-center gap-2 text-sm font-semibold tracking-wider text-accent uppercase">
+          <Icons.operations className="size-4" />
+          Career
+        </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight">Experience</h2>
       </div>
 
@@ -34,13 +38,21 @@ export function Experience() {
               </span>
 
               <div className="group rounded-2xl border border-line bg-card p-6 transition duration-300 hover:border-accent/40 hover:bg-card-hover">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="text-xl font-bold">{role.company}</h3>
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden
+                      className="grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-accent-soft text-sm font-bold text-accent"
+                    >
+                      {role.company.slice(0, 2).toUpperCase()}
+                    </span>
+                    <h3 className="text-xl font-bold">{role.company}</h3>
+                  </div>
                   <span className="text-sm text-subtle">
                     {role.period} · {role.location}
                   </span>
                 </div>
-                <p className="mt-1 font-medium text-accent">{role.title}</p>
+                <p className="mt-3 font-medium text-accent">{role.title}</p>
                 <p className="mt-3 text-muted">{role.summary}</p>
 
                 {role.stats.length > 0 && (

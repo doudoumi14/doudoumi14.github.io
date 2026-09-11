@@ -1,16 +1,23 @@
+import { Icons } from "@/components/Icons";
 import { certifications, education } from "@/data/credentials";
 
 export function Credentials() {
   return (
     <section id="credentials" className="mx-auto max-w-5xl px-6 py-20">
       <div className="reveal">
-        <p className="text-sm font-semibold tracking-wider text-accent uppercase">Background</p>
+        <p className="flex items-center gap-2 text-sm font-semibold tracking-wider text-accent uppercase">
+          <Icons.award className="size-4" />
+          Background
+        </p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight">Education & Certifications</h2>
       </div>
 
       <div className="reveal mt-10 grid gap-10 sm:grid-cols-2">
         <div>
-          <h3 className="text-xs font-semibold tracking-wider text-subtle uppercase">Education</h3>
+          <h3 className="flex items-center gap-2 text-xs font-semibold tracking-wider text-subtle uppercase">
+            <Icons.graduation className="size-4 text-accent" />
+            Education
+          </h3>
           <ul className="mt-5 flex flex-col gap-5">
             {education.map((entry) => (
               <li
@@ -29,7 +36,8 @@ export function Credentials() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold tracking-wider text-subtle uppercase">
+          <h3 className="flex items-center gap-2 text-xs font-semibold tracking-wider text-subtle uppercase">
+            <Icons.award className="size-4 text-accent" />
             Certifications
           </h3>
           <ul className="mt-5 flex flex-col gap-5">

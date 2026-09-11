@@ -4,29 +4,12 @@ import {
   careerLevels,
   loadProgress,
   saveProgress,
-  type CareerLevel,
   type MinigameResult,
 } from "@/data/career-game";
 import { useCallback, useEffect, useState } from "react";
-import { AutomationPipeline } from "./AutomationPipeline";
-import { BacklogTriage } from "./BacklogTriage";
-import { CapacityRouter } from "./CapacityRouter";
-import { FrameBudget } from "./FrameBudget";
+import { CareerRunner } from "./arcade/CareerRunner";
 
 type Phase = "select" | "brief" | "play" | "result";
-
-function Minigame({ level, onComplete }: { level: CareerLevel; onComplete: (r: MinigameResult) => void }) {
-  switch (level.game) {
-    case "frame-budget":
-      return <FrameBudget onComplete={onComplete} />;
-    case "automation-pipeline":
-      return <AutomationPipeline onComplete={onComplete} />;
-    case "backlog-triage":
-      return <BacklogTriage onComplete={onComplete} />;
-    case "capacity-router":
-      return <CapacityRouter onComplete={onComplete} />;
-  }
-}
 
 export function CareerGame({ onClose }: { onClose: () => void }) {
   // Mounted only after a click, never during SSR, so reading storage in the
@@ -87,7 +70,7 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-label="Career mode"
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-line bg-background shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-line bg-background shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
           <div className="flex items-center gap-3">
@@ -201,7 +184,7 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
                   quit level
                 </button>
               </div>
-              <Minigame key={runId} level={level} onComplete={handleComplete} />
+              <CareerRunner key={runId} levelId={level.id} onComplete={handleComplete} />
             </>
           )}
 

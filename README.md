@@ -21,11 +21,15 @@ Open `http://localhost:3000`.
 
 ## Career mode
 
-The experience section is playable. Each of the four roles is a level with a
-minigame built from the problem that job actually involved — frame-budget
-optimisation at CAE, assembling an automation pipeline at Archer, backlog
-triage at Desjardins, and network capacity routing at Bell. Clearing a level
+The experience section is playable. Each of the four roles is a side-scrolling
+level themed to that job — the flight deck at CAE, the automation floor at
+Archer, the compliance vault at Desjardins, and the network core at Bell.
+Collect the pickups, dodge the hazards, reach the flag; clearing a level
 reveals the real outcomes from that role. Progress is kept in `localStorage`.
+
+The game is a small canvas engine in `components/game/arcade` — gravity and
+AABB collision, a parallax backdrop, particles and screen shake, with keyboard
+and touch controls. No game library.
 
 ![Career mode level select](docs/career-mode.png)
 

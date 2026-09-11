@@ -1,9 +1,16 @@
+import { Icons } from "@/components/Icons";
 import { githubUrl, profile } from "@/data/profile";
 
 const LINKS = [
-  { label: "LinkedIn", href: profile.linkedin, primary: true, external: true },
-  { label: profile.email, href: `mailto:${profile.email}`, primary: false, external: false },
-  { label: "GitHub", href: githubUrl, primary: false, external: true },
+  { label: "LinkedIn", href: profile.linkedin, primary: true, external: true, icon: Icons.linkedin },
+  {
+    label: profile.email,
+    href: `mailto:${profile.email}`,
+    primary: false,
+    external: false,
+    icon: Icons.mail,
+  },
+  { label: "GitHub", href: githubUrl, primary: false, external: true, icon: Icons.github },
 ];
 
 export function Contact() {
@@ -34,10 +41,11 @@ export function Contact() {
               {...(link.external ? { target: "_blank", rel: "noreferrer" } : {})}
               className={
                 link.primary
-                  ? "rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-                  : "rounded-full border border-line px-6 py-3 text-sm font-semibold transition hover:border-accent hover:text-accent"
+                  ? "inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                  : "inline-flex items-center gap-2 rounded-full border border-line px-6 py-3 text-sm font-semibold transition hover:border-accent hover:text-accent"
               }
             >
+              <link.icon className="size-4" />
               {link.label}
             </a>
           ))}
