@@ -15,7 +15,7 @@ export const education: EducationEntry[] = [
   {
     school: "Polytechnique Montréal",
     credential: "B.Eng., Software Engineering",
-    period: "",
+    period: "Graduated 2023",
   },
   {
     school: "Ordre des ingénieurs du Québec (OIQ)",

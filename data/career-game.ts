@@ -61,10 +61,10 @@ export const careerLevels: CareerLevel[] = [
     act: "Rebuilding",
     company: "Polytechnique Montreal",
     place: "Montreal",
-    year: "to 2021",
+    year: "to 2023",
     role: "B.Eng., Software Engineering",
     brief:
-      "The degree that finally counted here, and the one that opens the path to the Iron Ring and the P.Eng. from the Ordre des ingénieurs du Québec.",
+      "The degree that finally counted here, and the one that opens the path to the Iron Ring and the P.Eng. from the Ordre des ingénieurs du Québec. The last stretch of it ran in parallel with the first engineering jobs — CAE, Archer and Desjardins all landed before the diploma did.",
     objective: "Meet every requirement, then ship The Capstone.",
     rewards: ["B.Eng. Software Engineering", "Route to P.Eng. (OIQ)"],
     skills: ["C++", "Software architecture", "Operating systems"],

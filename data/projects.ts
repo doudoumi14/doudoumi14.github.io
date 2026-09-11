@@ -9,6 +9,19 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    name: "Boring on Purpose",
+    tagline: "Index-fund retirement planning in five minutes",
+    description:
+      "Five questions become a target pot, a stocks/bonds split and an order of tax-sheltered accounts to fill. Built because people near retirement pay a percentage of their savings for stock picking they do not need.",
+    tech: ["Next.js", "TypeScript", "Tailwind", "SVG charts", "Vitest", "Playwright"],
+    repo: "boring-on-purpose",
+    highlights: [
+      "Finance maths as pure functions under 30 tests, asserted against independently derived values",
+      "Hand-built SVG charts on a palette validated for colour-vision deficiency",
+      "Fully static and client-side: no backend, no account, nothing stored",
+    ],
+  },
+  {
     name: "TaskFlow",
     tagline: "Full-stack project & task manager",
     description:
