@@ -74,7 +74,261 @@ function ground(width: number): Rect {
   return { x: 0, y: GROUND_Y, w: width, h: VIEW_H - GROUND_Y };
 }
 
+
+/**
+ * Platform archetypes for the story chapters. Hand-placing every rect made the
+ * first four levels feel distinct but is a lot of data; these keep each new
+ * chapter compact while still giving it its own shape.
+ */
+function layout(
+  kind: "journey" | "winter" | "climb" | "campus" | "civic" | "boardroom",
+  width: number,
+): Rect[] {
+  const out: Rect[] = [ground(width)];
+  const add = (x: number, y: number, w = 130) => out.push({ x, y, w, h: 18 });
+
+  switch (kind) {
+    case "journey":
+      // Sparse and far apart: a long way with little to stand on.
+      for (let i = 0; i < 7; i++) add(340 + i * 330, i % 2 ? 268 : 322, 120);
+      break;
+    case "winter":
+      for (let i = 0; i < 8; i++) add(300 + i * 280, i % 3 === 0 ? 218 : 310, 140);
+      break;
+    case "climb":
+      // A steady ascent that resets twice.
+      for (let i = 0; i < 10; i++) add(300 + i * 240, 340 - (i % 5) * 52, 120);
+      break;
+    case "campus":
+      for (let i = 0; i < 9; i++) add(310 + i * 270, i % 2 ? 232 : 312, 135);
+      break;
+    case "civic":
+      for (let i = 0; i < 6; i++) add(320 + i * 300, 300 - (i % 3) * 62, 140);
+      break;
+    case "boardroom":
+      for (let i = 0; i < 8; i++) add(320 + i * 290, i % 2 ? 250 : 318, 150);
+      break;
+  }
+  return out;
+}
+
+function spikes(xs: number[]): Rect[] {
+  return xs.map((x) => ({ x, y: 380, w: 56, h: 20 }));
+}
+
 export const arcadeLevels: Record<string, ArcadeLevel> = {
+  // ---- Act I: Algiers ----
+  usthb: {
+    id: "usthb",
+    title: "USTHB, Alger",
+    pickupName: "credits earned",
+    width: 2700,
+    platforms: layout("campus", 2700),
+    collectibles: [
+      { x: 330, y: 268, label: "Circuit analysis", icon: "spark", hue: 35 },
+      { x: 600, y: 188, label: "Signals & systems", icon: "gauge", hue: 200 },
+      { x: 880, y: 268, label: "Control loops", icon: "gear", hue: 145 },
+      { x: 1150, y: 188, label: "Microcontrollers", icon: "gear", hue: 20 },
+      { x: 1420, y: 268, label: "DSP", icon: "spark", hue: 280 },
+      { x: 1690, y: 188, label: "FPGA design", icon: "packet", hue: 175 },
+      { x: 1960, y: 268, label: "Lab reports", icon: "doc", hue: 55 },
+      { x: 2230, y: 188, label: "60 credits", icon: "gauge", hue: 95 },
+    ],
+    hazards: spikes([520, 1080, 1620, 2120]),
+    enemies: [
+      { x: 900, y: GROUND_Y - 30, type: "patroller", range: 120, speed: 58, hue: 30 },
+      { x: 1500, y: 240, type: "flyer", range: 50, speed: 64, hue: 42 },
+      { x: 2000, y: GROUND_Y - 30, type: "patroller", range: 130, speed: 70, hue: 30 },
+    ],
+    enemySkin: "form",
+    boss: { x: 2480, name: "Les Examens", hits: 3, kind: "exam", hue: 8 },
+    theme: {
+      sky: ["#6b3f1d", "#d99a52"],
+      far: "#8a5626",
+      mid: "#6d4320",
+      ground: "#4a2d15",
+      groundTop: "#b8762f",
+      accent: "#ffd08a",
+      hazard: "#c0392b",
+      backdrop: "office",
+    },
+  },
+
+  // ---- Act II: the move ----
+  crossing: {
+    id: "crossing",
+    title: "One-way flight",
+    pickupName: "carried across",
+    width: 2600,
+    platforms: layout("journey", 2600),
+    collectibles: [
+      { x: 300, y: 330, label: "Passport", icon: "doc", hue: 205 },
+      { x: 400, y: 222, label: "Transcripts", icon: "doc", hue: 45 },
+      { x: 730, y: 276, label: "French & English", icon: "packet", hue: 160 },
+      { x: 1060, y: 222, label: "Savings", icon: "gauge", hue: 130 },
+      { x: 1390, y: 276, label: "One suitcase", icon: "shield", hue: 25 },
+      { x: 1720, y: 222, label: "First winter coat", icon: "shield", hue: 195 },
+      { x: 2050, y: 276, label: "Starting over at 21", icon: "spark", hue: 300 },
+    ],
+    hazards: spikes([620, 1240, 1860]),
+    enemies: [
+      { x: 950, y: GROUND_Y - 30, type: "patroller", range: 130, speed: 62, hue: 215 },
+      { x: 1550, y: 240, type: "flyer", range: 54, speed: 70, hue: 215 },
+    ],
+    enemySkin: "form",
+    boss: { x: 2380, name: "The Paperwork", hits: 3, kind: "dossier", hue: 210 },
+    theme: {
+      sky: ["#8a5a2b", "#3f6b93"],
+      far: "#4e6f91",
+      mid: "#3c5875",
+      ground: "#26384d",
+      groundTop: "#5b87b5",
+      accent: "#ffd9a0",
+      hazard: "#e05252",
+      backdrop: "clouds",
+    },
+  },
+
+  // ---- Act III: rebuilding in Montreal ----
+  uqam: {
+    id: "uqam",
+    title: "UQAM, first winter",
+    pickupName: "credits banked",
+    width: 2800,
+    platforms: layout("winter", 2800),
+    collectibles: [
+      { x: 340, y: 174, label: "Switched to software", icon: "gear", hue: 210 },
+      { x: 620, y: 266, label: "Algorithms", icon: "spark", hue: 275 },
+      { x: 900, y: 266, label: "Java & C", icon: "packet", hue: 150 },
+      { x: 1180, y: 174, label: "Databases", icon: "doc", hue: 35 },
+      { x: 1460, y: 266, label: "Nothing transferred", icon: "shield", hue: 0 },
+      { x: 1740, y: 266, label: "Minus 30°C, still going", icon: "gauge", hue: 190 },
+      { x: 2020, y: 174, label: "50 credits", icon: "gauge", hue: 100 },
+    ],
+    hazards: spikes([500, 1060, 1600, 2180]),
+    enemies: [
+      { x: 800, y: 230, type: "flyer", range: 60, speed: 66, hue: 195 },
+      { x: 1300, y: GROUND_Y - 30, type: "patroller", range: 120, speed: 64, hue: 200 },
+      { x: 1900, y: 210, type: "flyer", range: 56, speed: 74, hue: 195 },
+    ],
+    enemySkin: "snow",
+    boss: { x: 2560, name: "The Equivalence", hits: 4, kind: "stamp", hue: 200 },
+    theme: {
+      sky: ["#16243a", "#5b7fa6"],
+      far: "#2b4257",
+      mid: "#1e3145",
+      ground: "#15222f",
+      groundTop: "#7aa0c4",
+      accent: "#cfe8ff",
+      hazard: "#ff7b7b",
+      backdrop: "vault",
+    },
+  },
+
+  polytechnique: {
+    id: "polytechnique",
+    title: "Polytechnique",
+    pickupName: "requirements met",
+    width: 2900,
+    platforms: layout("climb", 2900),
+    collectibles: [
+      { x: 350, y: 296, label: "C++ & data structures", icon: "spark", hue: 220 },
+      { x: 590, y: 244, label: "Software architecture", icon: "gear", hue: 265 },
+      { x: 830, y: 192, label: "Operating systems", icon: "packet", hue: 175 },
+      { x: 1070, y: 140, label: "Team projects", icon: "doc", hue: 40 },
+      { x: 1310, y: 296, label: "Internships", icon: "gauge", hue: 130 },
+      { x: 1790, y: 192, label: "Capstone build", icon: "gear", hue: 300 },
+      { x: 2270, y: 140, label: "B.Eng. conferred", icon: "shield", hue: 95 },
+      { x: 2510, y: 296, label: "Path to P.Eng.", icon: "shield", hue: 55 },
+    ],
+    hazards: spikes([510, 1150, 1670, 2190]),
+    enemies: [
+      { x: 950, y: GROUND_Y - 30, type: "patroller", range: 120, speed: 66, hue: 255 },
+      { x: 1450, y: 200, type: "flyer", range: 52, speed: 76, hue: 255 },
+      { x: 2050, y: GROUND_Y - 30, type: "patroller", range: 130, speed: 80, hue: 255 },
+    ],
+    enemySkin: "form",
+    boss: { x: 2700, name: "The Capstone", hits: 4, kind: "diploma", hue: 265 },
+    theme: {
+      sky: ["#1d2140", "#5a5fa8"],
+      far: "#31356b",
+      mid: "#262a52",
+      ground: "#1b1e3a",
+      groundTop: "#6f74c4",
+      accent: "#b9bcff",
+      hazard: "#ff6b8a",
+      backdrop: "office",
+    },
+  },
+
+  citizenship: {
+    id: "citizenship",
+    title: "The ceremony",
+    pickupName: "steps completed",
+    width: 2200,
+    platforms: layout("civic", 2200),
+    collectibles: [
+      { x: 360, y: 254, label: "Residency years", icon: "gauge", hue: 10 },
+      { x: 660, y: 192, label: "Language proof", icon: "doc", hue: 205 },
+      { x: 960, y: 254, label: "The citizenship test", icon: "shield", hue: 45 },
+      { x: 1260, y: 192, label: "The oath", icon: "shield", hue: 140 },
+      { x: 1560, y: 254, label: "Canadian citizen, 2022", icon: "spark", hue: 0 },
+    ],
+    hazards: spikes([560, 1160]),
+    enemies: [
+      { x: 850, y: GROUND_Y - 30, type: "patroller", range: 110, speed: 60, hue: 355 },
+      { x: 1400, y: 230, type: "flyer", range: 48, speed: 68, hue: 355 },
+    ],
+    enemySkin: "form",
+    boss: { x: 2000, name: "The Test", hits: 3, kind: "exam", hue: 355 },
+    theme: {
+      sky: ["#4a1520", "#b5485c"],
+      far: "#6d2130",
+      mid: "#521a26",
+      ground: "#3a1219",
+      groundTop: "#c25668",
+      accent: "#ffd6dc",
+      hazard: "#ff8f6b",
+      backdrop: "vault",
+    },
+  },
+
+  // ---- Act V: now ----
+  mba: {
+    id: "mba",
+    title: "Laval, in progress",
+    pickupName: "modules cleared",
+    width: 2700,
+    platforms: layout("boardroom", 2700),
+    collectibles: [
+      { x: 380, y: 206, label: "Strategic management", icon: "gear", hue: 215 },
+      { x: 670, y: 274, label: "Financial intelligence", icon: "gauge", hue: 140 },
+      { x: 960, y: 206, label: "Business analytics", icon: "gauge", hue: 275 },
+      { x: 1250, y: 274, label: "Data-driven leadership", icon: "packet", hue: 35 },
+      { x: 1540, y: 206, label: "Negotiation", icon: "doc", hue: 180 },
+      { x: 1830, y: 274, label: "AACSB + EQUIS", icon: "shield", hue: 95 },
+      { x: 2120, y: 206, label: "Expected 2027", icon: "spark", hue: 300 },
+    ],
+    hazards: spikes([560, 1120, 1700, 2260]),
+    enemies: [
+      { x: 900, y: GROUND_Y - 30, type: "patroller", range: 125, speed: 68, hue: 225 },
+      { x: 1450, y: 240, type: "flyer", range: 55, speed: 76, hue: 225 },
+      { x: 2000, y: GROUND_Y - 30, type: "patroller", range: 135, speed: 82, hue: 225 },
+    ],
+    enemySkin: "form",
+    boss: { x: 2500, name: "The Dissertation", hits: 4, kind: "clipboard", hue: 225 },
+    theme: {
+      sky: ["#0f2b2f", "#2f7f86"],
+      far: "#1b4a50",
+      mid: "#133a3f",
+      ground: "#0d2a2e",
+      groundTop: "#3a9aa3",
+      accent: "#9ff0f5",
+      hazard: "#ffa94d",
+      backdrop: "servers",
+    },
+  },
+
   // Long runway strides and high floating platforms — this one is about
   // committing to big jumps.
   cae: {

@@ -31,10 +31,10 @@ export function CareerGameLauncher() {
           <Icons.play className="size-5" />
         </span>
         <span className="flex-1">
-          <span className="block font-semibold">Play my career instead of reading it</span>
+          <span className="block font-semibold">Play my story instead of reading it</span>
           <span className="mt-0.5 block text-sm text-muted">
-            A side-scrolling level per role — run the flight deck, the automation floor, the
-            compliance vault and the network core.
+            Ten side-scrolling chapters — Algiers to Montreal, a degree rebuilt from zero,
+            citizenship, four engineering roles, and an MBA still in progress.
           </span>
         </span>
         <span className="hidden shrink-0 text-sm text-subtle sm:block">

@@ -271,7 +271,7 @@ test.describe("Portfolio site", () => {
     await page.goto("/");
     await waitForHydration(page);
 
-    await page.getByRole("button", { name: /play my career/i }).click();
+    await page.getByRole("button", { name: /play my story/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
     await expect(game).toBeVisible();
 
@@ -286,7 +286,7 @@ test.describe("Portfolio site", () => {
   test("starting a level renders the playable canvas and its controls", async ({ page }) => {
     await page.goto("/");
     await waitForHydration(page);
-    await page.getByRole("button", { name: /play my career/i }).click();
+    await page.getByRole("button", { name: /play my story/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
 
     await game.getByRole("button", { name: /CAE/ }).first().click();
@@ -316,7 +316,7 @@ test.describe("Portfolio site", () => {
 
     await page.goto("/");
     await waitForHydration(page);
-    await page.getByRole("button", { name: /play my career/i }).click();
+    await page.getByRole("button", { name: /play my story/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
 
     await game.getByRole("button", { name: /CAE/ }).first().click();
@@ -345,7 +345,7 @@ test.describe("Portfolio site", () => {
 
     await page.goto("/");
     await waitForHydration(page);
-    await page.getByRole("button", { name: /play my career/i }).click();
+    await page.getByRole("button", { name: /play my story/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
 
     await game.getByRole("button", { name: /CAE/ }).first().click();
@@ -404,7 +404,7 @@ test.describe("Portfolio site", () => {
     await page.reload();
     await waitForHydration(page);
 
-    await expect(page.getByRole("button", { name: /play my career/i })).toContainText("2/4");
+    await expect(page.getByRole("button", { name: /play my story/i })).toContainText("2/10");
   });
 
   test("the brand name in the nav never breaks mid-word, even on a phone viewport", async ({

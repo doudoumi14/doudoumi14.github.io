@@ -9,7 +9,7 @@ export const education: EducationEntry[] = [
   {
     school: "Université Laval",
     credential: "MBA, Business Analytics",
-    period: "Expected 2025",
+    period: "Expected 2027",
     note: "AACSB + EQUIS accredited — Strategic Management, Financial Intelligence, Data-Driven Leadership",
   },
   {

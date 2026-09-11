@@ -7,6 +7,7 @@ import {
   type MinigameResult,
 } from "@/data/career-game";
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { CareerRunner } from "./arcade/CareerRunner";
 
 type Phase = "select" | "brief" | "play" | "result";
@@ -60,7 +61,11 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
 
   const allCleared = cleared.length === careerLevels.length;
 
-  return (
+  // Portalled to <body>. The launcher sits inside a scroll-reveal wrapper, and
+  // a transformed ancestor becomes the containing block for fixed-position
+  // descendants — which trapped this overlay inside that wrapper instead of
+  // covering the viewport, letting the page show through the dialog.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -94,21 +99,29 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
           {phase === "select" && (
             <>
               <p className="text-muted">
-                Four roles, four problems I actually had to solve. Play through them in order — or
-                jump to whichever sounds interesting.
+                Ten chapters, from a lecture hall in Algiers to an MBA still in progress. Play them in
+                order for the whole story — or jump to whichever one interests you.
               </p>
 
               {allCleared && (
                 <p className="mt-4 rounded-lg border border-accent bg-accent-soft px-4 py-3 text-sm">
-                  Campaign complete. That is the whole career, 2021 to now.
+                  Campaign complete. Algiers 2015 to Quebec 2027, the whole way through.
                 </p>
               )}
 
               <ul className="mt-5 flex flex-col gap-3">
                 {careerLevels.map((item, index) => {
                   const isCleared = cleared.includes(item.id);
+                  // Acts are eras, and the chapters are in chronological order,
+                  // so a heading appears wherever the era changes.
+                  const startsAct = index === 0 || careerLevels[index - 1].act !== item.act;
                   return (
                     <li key={item.id}>
+                      {startsAct && (
+                        <p className="mt-3 mb-2 text-xs font-semibold tracking-[0.18em] text-subtle uppercase first:mt-0">
+                          {item.act}
+                        </p>
+                      )}
                       <button
                         type="button"
                         onClick={() => start(index)}
@@ -126,6 +139,9 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
                         <span className="flex-1">
                           <span className="block font-semibold">{item.company}</span>
                           <span className="block text-sm text-muted">{item.role}</span>
+                          {item.place && (
+                            <span className="block text-xs text-subtle">{item.place}</span>
+                          )}
                         </span>
                         <span className="text-xs text-subtle">{item.year}</span>
                       </button>
@@ -256,6 +272,7 @@ export function CareerGame({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

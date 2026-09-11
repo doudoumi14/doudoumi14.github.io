@@ -3,8 +3,8 @@
 // characters and not clipart.
 
 export type PickupIcon = "gauge" | "gear" | "shield" | "packet" | "doc" | "spark";
-export type EnemySkin = "glitch" | "form" | "flag" | "alert";
-export type BossKind = "frame" | "clipboard" | "stamp" | "surge";
+export type EnemySkin = "glitch" | "form" | "flag" | "alert" | "snow";
+export type BossKind = "frame" | "clipboard" | "stamp" | "surge" | "exam" | "dossier" | "diploma";
 
 function hsl(hue: number, light = 62, sat = 85) {
   return `hsl(${hue} ${sat}% ${light}%)`;
@@ -313,6 +313,24 @@ export function drawEnemy(
       ctx.fillRect(-12, 12, 12, 3.5);
     }
     eyes(ctx, time, 3, -8, 1.5, true);
+  } else if (skin === "snow") {
+    // First Quebec winter.
+    const drift = Math.sin(time * 3) * 2;
+    ctx.strokeStyle = fill;
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI + drift * 0.05;
+      ctx.moveTo(-Math.cos(a) * 11, -Math.sin(a) * 11);
+      ctx.lineTo(Math.cos(a) * 11, Math.sin(a) * 11);
+    }
+    ctx.stroke();
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.arc(0, 0, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    eyes(ctx, time, 2.4, 0, 1.5, true);
   } else {
     // An alert packet.
     ctx.fillStyle = fill;
@@ -494,6 +512,114 @@ export function drawBoss(
       ctx.stroke();
 
       eyes(ctx, time, 5.5, 12, 2.2, true);
+      break;
+    }
+
+    case "exam": {
+      // Les Examens — a graded paper, red pen and all.
+      ctx.fillStyle = paper;
+      ctx.beginPath();
+      ctx.roundRect(-15, -18, 30, 36, 2);
+      ctx.fill();
+      ctx.strokeStyle = "#4a4a52";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        ctx.moveTo(-11, -8 + i * 4.5);
+        ctx.lineTo(11, -8 + i * 4.5);
+      }
+      ctx.stroke();
+      // a big red mark, scrawled
+      ctx.save();
+      ctx.rotate(-0.18 + Math.sin(time * 2.4) * 0.05);
+      ctx.strokeStyle = fill;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-8, -14);
+      ctx.lineTo(8, 2);
+      ctx.moveTo(8, -14);
+      ctx.lineTo(-8, 2);
+      ctx.stroke();
+      ctx.restore();
+      eyes(ctx, time, 5.5, 11, 2.2, true);
+      break;
+    }
+
+    case "dossier": {
+      // The Paperwork — an immigration file, stamped and bulging.
+      ctx.fillStyle = dark;
+      ctx.beginPath();
+      ctx.moveTo(-17, -10);
+      ctx.lineTo(-4, -10);
+      ctx.lineTo(0, -14);
+      ctx.lineTo(17, -14);
+      ctx.lineTo(17, 16);
+      ctx.lineTo(-17, 16);
+      ctx.closePath();
+      ctx.fill();
+      // papers poking out, shuffling
+      ctx.fillStyle = paper;
+      for (let i = 0; i < 3; i++) {
+        const off = Math.sin(time * 2 + i) * 1.6;
+        ctx.fillRect(-12 + i * 3, -9 + off, 20, 18 - i * 3);
+      }
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.roundRect(-16, -6, 32, 20, 2);
+      ctx.globalAlpha = 0.9;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      // stamp
+      ctx.strokeStyle = hurt ? "#bbb" : "#c92a2a";
+      ctx.lineWidth = 2.2;
+      ctx.save();
+      ctx.rotate(0.3);
+      ctx.beginPath();
+      ctx.arc(6, 4, 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      eyes(ctx, time, 5.5, 2, 2.3, true);
+      break;
+    }
+
+    case "diploma": {
+      // The Capstone — a rolled diploma with a ribbon.
+      ctx.fillStyle = paper;
+      ctx.beginPath();
+      ctx.roundRect(-16, -9, 32, 18, 3);
+      ctx.fill();
+      ctx.fillStyle = "#d9d4c6";
+      ctx.beginPath();
+      ctx.roundRect(-18, -11, 5, 22, 2.5);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.roundRect(13, -11, 5, 22, 2.5);
+      ctx.fill();
+      ctx.strokeStyle = "#4a4a52";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        ctx.moveTo(-10, -3 + i * 4);
+        ctx.lineTo(10, -3 + i * 4);
+      }
+      ctx.stroke();
+      // ribbon
+      const sway = Math.sin(time * 3) * 2;
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      ctx.arc(0, 10, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-3, 13);
+      ctx.lineTo(-6 + sway, 22);
+      ctx.lineTo(0, 17);
+      ctx.closePath();
+      ctx.moveTo(3, 13);
+      ctx.lineTo(6 + sway, 22);
+      ctx.lineTo(0, 17);
+      ctx.closePath();
+      ctx.fill();
+      eyes(ctx, time, 5, -2, 2.2, true);
       break;
     }
 
