@@ -1,7 +1,18 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { profile } from "../data/profile";
 import { experience } from "../data/experience";
 import { projects } from "../data/projects";
+
+// Keyboard shortcuts only work once the client bundle has hydrated and
+// attached its listeners. The hero canvas gets its backing size in an effect,
+// so a non-zero width is a genuine "client JS has run" signal — more reliable
+// than sleeping for an arbitrary interval.
+async function waitForHydration(page: Page) {
+  await page.waitForFunction(() => {
+    const canvas = document.querySelector("#top canvas") as HTMLCanvasElement | null;
+    return !!canvas && canvas.width > 0;
+  });
+}
 
 test.describe("Portfolio site", () => {
   test("renders the owner's name and title", async ({ page }) => {
@@ -135,6 +146,116 @@ test.describe("Portfolio site", () => {
       document.getElementById("projects")?.scrollIntoView();
     });
     await expect(page.locator('header a[aria-current="true"]')).toHaveText("Projects");
+  });
+
+  test("the terminal opens with '/', runs commands, and closes with Escape", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+
+    await page.keyboard.press("/");
+    const dialog = page.getByRole("dialog", { name: /terminal/i });
+    await expect(dialog).toBeVisible();
+
+    const input = page.getByLabel("Terminal input");
+    await input.fill("whoami");
+    await input.press("Enter");
+    await expect(dialog).toContainText(profile.role);
+
+    await input.fill("projects");
+    await input.press("Enter");
+    for (const project of projects) {
+      await expect(dialog).toContainText(project.name);
+    }
+
+    await input.fill("clear");
+    await input.press("Enter");
+    await expect(dialog).not.toContainText(profile.role);
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
+
+  test("an unknown terminal command reports itself rather than failing silently", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.keyboard.press("/");
+    const input = page.getByLabel("Terminal input");
+    await input.fill("definitely-not-a-command");
+    await input.press("Enter");
+    await expect(page.getByRole("dialog")).toContainText("command not found");
+  });
+
+  test("terminal history and tab-completion work", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.keyboard.press("/");
+    const input = page.getByLabel("Terminal input");
+
+    await input.fill("skills");
+    await input.press("Enter");
+    await input.press("ArrowUp");
+    await expect(input).toHaveValue("skills");
+
+    await input.fill("");
+    await input.fill("exp");
+    await input.press("Tab");
+    await expect(input).toHaveValue("experience");
+  });
+
+  test("the hero network canvas renders", async ({ page }) => {
+    await page.goto("/");
+    const canvas = page.locator("#top canvas");
+    await expect(canvas).toHaveCount(1);
+    // A painted canvas has non-zero backing dimensions.
+    const size = await canvas.evaluate((el) => {
+      const c = el as HTMLCanvasElement;
+      return { w: c.width, h: c.height };
+    });
+    expect(size.w).toBeGreaterThan(0);
+    expect(size.h).toBeGreaterThan(0);
+  });
+
+  test("the scroll progress bar advances as the page scrolls", async ({ page }) => {
+    await page.goto("/");
+    const bar = page.locator("div.origin-left").first();
+    const scaleAt = async () =>
+      bar.evaluate((el) => {
+        const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+        return m.a;
+      });
+
+    const atTop = await scaleAt();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo(0, document.documentElement.scrollHeight);
+    });
+    await page.waitForTimeout(300);
+    expect(await scaleAt()).toBeGreaterThan(atTop);
+  });
+
+  test("the Konami code unlocks the easter egg", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+    for (const key of [
+      "ArrowUp",
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowLeft",
+      "ArrowRight",
+      "b",
+      "a",
+    ]) {
+      await page.keyboard.press(key);
+    }
+    // Case-insensitive: the label is rendered through a CSS uppercase
+    // transform, which innerText reflects.
+    await expect(page.getByText(/achievement unlocked/i)).toBeVisible();
+    await expect(page.getByText(/curiosity/i)).toBeVisible();
   });
 
   test("the brand name in the nav never breaks mid-word, even on a phone viewport", async ({

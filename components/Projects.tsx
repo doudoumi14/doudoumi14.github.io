@@ -1,5 +1,6 @@
 import { repoUrl } from "@/data/profile";
 import { projects } from "@/data/projects";
+import { TiltCard } from "./TiltCard";
 
 export function Projects() {
   return (
@@ -15,12 +16,13 @@ export function Projects() {
 
       <div className="reveal mt-10 grid gap-5 md:grid-cols-3">
         {projects.map((project) => (
-          <a
+          <TiltCard
+            as="a"
             key={project.name}
             href={repoUrl(project.repo)}
             target="_blank"
             rel="noreferrer"
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-card-hover"
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6 hover:border-accent/40 hover:bg-card-hover"
           >
             <div
               aria-hidden
@@ -63,7 +65,7 @@ export function Projects() {
                 </span>
               ))}
             </div>
-          </a>
+          </TiltCard>
         ))}
       </div>
     </section>
