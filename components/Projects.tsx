@@ -4,7 +4,11 @@ import { projects } from "@/data/projects";
 export function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-5xl px-6 py-16">
-      <h2 className="text-2xl font-bold tracking-tight">Projects</h2>
+      <h2 className="text-2xl font-bold tracking-tight">Side Projects</h2>
+      <p className="mt-2 max-w-2xl text-black/60 dark:text-white/60">
+        Hands-on technical work outside the day job — each one fully working, tested, and
+        code-reviewed by hand.
+      </p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
           <a

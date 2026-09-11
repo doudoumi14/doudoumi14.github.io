@@ -1,4 +1,6 @@
 import { Contact } from "@/components/Contact";
+import { Credentials } from "@/components/Credentials";
+import { Experience } from "@/components/Experience";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { Nav } from "@/components/Nav";
@@ -11,8 +13,10 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <Experience />
         <Projects />
         <Skills />
+        <Credentials />
         <Contact />
       </main>
       <Footer />
