@@ -1,4 +1,5 @@
 import { experience } from "@/data/experience";
+import { CareerGameLauncher } from "./game/CareerGameLauncher";
 
 export function Experience() {
   return (
@@ -6,6 +7,10 @@ export function Experience() {
       <div className="reveal">
         <p className="text-sm font-semibold tracking-wider text-accent uppercase">Career</p>
         <h2 className="mt-2 text-3xl font-bold tracking-tight">Experience</h2>
+      </div>
+
+      <div className="reveal mt-8">
+        <CareerGameLauncher />
       </div>
 
       <div className="relative mt-12">

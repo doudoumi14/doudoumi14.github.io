@@ -14,6 +14,17 @@ async function waitForHydration(page: Page) {
   });
 }
 
+// Even after hydration, a keypress can land in the gap before a given
+// component's listener is attached — and a missed keypress is simply lost, not
+// queued. So retry the trigger until its effect is observable rather than
+// pressing once and hoping.
+async function pressUntil(page: Page, keys: string[], expectation: () => Promise<unknown>) {
+  await expect(async () => {
+    for (const key of keys) await page.keyboard.press(key);
+    await expectation();
+  }).toPass({ timeout: 15000 });
+}
+
 test.describe("Portfolio site", () => {
   test("renders the owner's name and title", async ({ page }) => {
     await page.goto("/");
@@ -97,13 +108,22 @@ test.describe("Portfolio site", () => {
       }
     });
 
-    // Nothing may be left stuck at opacity 0 by the scroll-reveal.
-    const hidden = await page.evaluate(() =>
-      Array.from(document.querySelectorAll(".reveal")).filter(
-        (el) => parseFloat(getComputedStyle(el).opacity) < 0.9,
-      ).length,
-    );
-    expect(hidden).toBe(0);
+    // Nothing may be left stuck at opacity 0 by the scroll-reveal. Polled
+    // rather than asserted once: the reveal is a 600ms fade, so the last
+    // element to come into view is legitimately mid-transition right after
+    // the scroll finishes.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              Array.from(document.querySelectorAll(".reveal")).filter(
+                (el) => parseFloat(getComputedStyle(el).opacity) < 0.9,
+              ).length,
+          ),
+        { timeout: 5000 },
+      )
+      .toBe(0);
   });
 
   test("content is still visible when the reveal script never runs", async ({ page }) => {
@@ -152,9 +172,8 @@ test.describe("Portfolio site", () => {
     await page.goto("/");
     await waitForHydration(page);
 
-    await page.keyboard.press("/");
     const dialog = page.getByRole("dialog", { name: /terminal/i });
-    await expect(dialog).toBeVisible();
+    await pressUntil(page, ["/"], () => expect(dialog).toBeVisible({ timeout: 1500 }));
 
     const input = page.getByLabel("Terminal input");
     await input.fill("whoami");
@@ -180,8 +199,8 @@ test.describe("Portfolio site", () => {
   }) => {
     await page.goto("/");
     await waitForHydration(page);
-    await page.keyboard.press("/");
     const input = page.getByLabel("Terminal input");
+    await pressUntil(page, ["/"], () => expect(input).toBeVisible({ timeout: 1500 }));
     await input.fill("definitely-not-a-command");
     await input.press("Enter");
     await expect(page.getByRole("dialog")).toContainText("command not found");
@@ -190,8 +209,8 @@ test.describe("Portfolio site", () => {
   test("terminal history and tab-completion work", async ({ page }) => {
     await page.goto("/");
     await waitForHydration(page);
-    await page.keyboard.press("/");
     const input = page.getByLabel("Terminal input");
+    await pressUntil(page, ["/"], () => expect(input).toBeVisible({ timeout: 1500 }));
 
     await input.fill("skills");
     await input.press("Enter");
@@ -238,24 +257,69 @@ test.describe("Portfolio site", () => {
   test("the Konami code unlocks the easter egg", async ({ page }) => {
     await page.goto("/");
     await waitForHydration(page);
-    for (const key of [
-      "ArrowUp",
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight",
-      "ArrowLeft",
-      "ArrowRight",
-      "b",
-      "a",
-    ]) {
-      await page.keyboard.press(key);
-    }
     // Case-insensitive: the label is rendered through a CSS uppercase
     // transform, which innerText reflects.
-    await expect(page.getByText(/achievement unlocked/i)).toBeVisible();
+    await pressUntil(
+      page,
+      ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"],
+      () => expect(page.getByText(/achievement unlocked/i)).toBeVisible({ timeout: 1500 }),
+    );
     await expect(page.getByText(/curiosity/i)).toBeVisible();
+  });
+
+  test("career mode lists a level per role and opens a brief", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+
+    await page.getByRole("button", { name: /play my career/i }).click();
+    const game = page.getByRole("dialog", { name: "Career mode" });
+    await expect(game).toBeVisible();
+
+    for (const role of experience) {
+      await expect(game.getByText(role.company, { exact: true })).toBeVisible();
+    }
+
+    await game.getByRole("button", { name: /Bell/ }).first().click();
+    await expect(game.getByRole("button", { name: "Start level" })).toBeVisible();
+  });
+
+  test("a level can be won and reveals the real achievements", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.getByRole("button", { name: /play my career/i }).click();
+    const game = page.getByRole("dialog", { name: "Career mode" });
+
+    // The Archer level is deterministic: the steps have one correct order.
+    await game.getByRole("button", { name: /Archer/ }).first().click();
+    await game.getByRole("button", { name: "Start level" }).click();
+
+    for (const step of [
+      "Lead submitted in Salesforce",
+      "Validate required fields",
+      "Enrich with account data",
+      "Route to the right owner",
+      "Trigger approval workflow",
+      "Write back to reporting",
+    ]) {
+      await game.getByRole("button", { name: step, exact: true }).click();
+    }
+
+    await expect(game.getByText(/level cleared/i)).toBeVisible();
+    // The reward panel must surface the figures from the resume.
+    await expect(game.getByText("25% ahead of schedule")).toBeVisible();
+    await expect(game.getByText("40% less manual data entry")).toBeVisible();
+  });
+
+  test("career progress persists across a reload", async ({ page }) => {
+    await page.goto("/");
+    await waitForHydration(page);
+    await page.evaluate(() =>
+      localStorage.setItem("career-progress", JSON.stringify(["archer", "bell"])),
+    );
+    await page.reload();
+    await waitForHydration(page);
+
+    await expect(page.getByRole("button", { name: /play my career/i })).toContainText("2/4");
   });
 
   test("the brand name in the nav never breaks mid-word, even on a phone viewport", async ({
