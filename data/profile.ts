@@ -6,7 +6,7 @@ export const profile = {
     "Strategic software engineer (P.Eng.) and MBA candidate with 4+ years bridging deep technical execution and business growth — currently leading capacity, performance, and automation strategy for enterprise-scale infrastructure at Bell.",
   email: "adem.brouri.pro@gmail.com",
   github: "doudoumi14",
-  linkedin: "https://www.linkedin.com/in/adem-brouri",
+  linkedin: "https://www.linkedin.com/in/adem-brouri-ing-875b95169/",
   location: "Montreal, Canada · Open to remote / global hybrid",
 };
 

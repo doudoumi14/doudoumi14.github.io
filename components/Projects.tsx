@@ -3,45 +3,61 @@ import { projects } from "@/data/projects";
 
 export function Projects() {
   return (
-    <section id="projects" className="mx-auto max-w-5xl px-6 py-16">
-      <h2 className="text-2xl font-bold tracking-tight">Side Projects</h2>
-      <p className="mt-2 max-w-2xl text-black/60 dark:text-white/60">
-        Hands-on technical work outside the day job — each one fully working, tested, and
-        code-reviewed by hand.
-      </p>
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <section id="projects" className="mx-auto max-w-5xl px-6 py-20">
+      <div className="reveal">
+        <p className="text-sm font-semibold tracking-wider text-accent uppercase">Code</p>
+        <h2 className="mt-2 text-3xl font-bold tracking-tight">Side Projects</h2>
+        <p className="mt-3 max-w-2xl text-muted">
+          Hands-on technical work outside the day job — each one fully working, tested end-to-end
+          in a real browser, and running in CI.
+        </p>
+      </div>
+
+      <div className="reveal mt-10 grid gap-5 md:grid-cols-3">
         {projects.map((project) => (
           <a
             key={project.name}
             href={repoUrl(project.repo)}
             target="_blank"
             rel="noreferrer"
-            className="group flex flex-col rounded-2xl border border-black/10 p-6 transition hover:border-black/25 hover:shadow-sm dark:border-white/10 dark:hover:border-white/25"
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-card-hover"
           >
-            <h3 className="text-lg font-semibold group-hover:underline">{project.name}</h3>
-            <p className="mt-1 text-sm font-medium text-black/50 dark:text-white/50">
-              {project.tagline}
-            </p>
-            <p className="mt-4 text-sm text-black/70 dark:text-white/70">
-              {project.description}
-            </p>
+            <div
+              aria-hidden
+              className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            />
 
-            <ul className="mt-4 flex flex-1 flex-col gap-1.5 text-sm text-black/60 dark:text-white/60">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">{project.name}</h3>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="size-4 text-subtle transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M7 17L17 7M17 7H8M17 7v9" />
+              </svg>
+            </div>
+
+            <p className="mt-1 text-sm font-medium text-accent">{project.tagline}</p>
+            <p className="mt-4 text-sm text-muted">{project.description}</p>
+
+            <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm text-muted">
               {project.highlights.map((highlight) => (
-                <li key={highlight} className="flex gap-2">
-                  <span aria-hidden className="text-black/30 dark:text-white/30">
-                    •
-                  </span>
+                <li key={highlight} className="flex gap-2.5">
+                  <span aria-hidden className="mt-1.5 size-1 shrink-0 rounded-full bg-accent/60" />
                   <span>{highlight}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-1.5 border-t border-line pt-4">
               {project.tech.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium text-black/70 dark:bg-white/10 dark:text-white/70"
+                  className="rounded-md bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent"
                 >
                   {tech}
                 </span>

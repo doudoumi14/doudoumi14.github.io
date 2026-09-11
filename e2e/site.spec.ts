@@ -75,6 +75,68 @@ test.describe("Portfolio site", () => {
     expect(overflows).toBe(false);
   });
 
+  test("all sections become visible after scrolling through the page", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(async () => {
+      document.documentElement.style.scrollBehavior = "auto";
+      const step = Math.floor(window.innerHeight * 0.6);
+      for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 80));
+      }
+    });
+
+    // Nothing may be left stuck at opacity 0 by the scroll-reveal.
+    const hidden = await page.evaluate(() =>
+      Array.from(document.querySelectorAll(".reveal")).filter(
+        (el) => parseFloat(getComputedStyle(el).opacity) < 0.9,
+      ).length,
+    );
+    expect(hidden).toBe(0);
+  });
+
+  test("content is still visible when the reveal script never runs", async ({ page }) => {
+    await page.goto("/");
+    // Simulates JS failing to boot: without .js-reveal the content must render
+    // normally rather than staying permanently invisible.
+    await page.evaluate(() => document.documentElement.classList.remove("js-reveal"));
+    const opacity = await page
+      .locator("#contact .reveal")
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).opacity));
+    expect(opacity).toBe(1);
+  });
+
+  test("the impact metrics count up to their final values", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByText("99.9%", { exact: true })).toBeVisible();
+    await expect(page.getByText("90%", { exact: true }).first()).toBeVisible();
+  });
+
+  test("the theme toggle switches between light and dark", async ({ page }) => {
+    await page.goto("/");
+    const isDark = () => page.evaluate(() => document.documentElement.classList.contains("dark"));
+    const before = await isDark();
+
+    await page.getByRole("button", { name: /toggle colour theme/i }).click();
+    expect(await isDark()).toBe(!before);
+
+    // And it survives a reload, i.e. the choice was persisted.
+    await page.reload();
+    expect(await isDark()).toBe(!before);
+  });
+
+  test("the nav highlights nothing while the hero is in view", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("header a[aria-current='true']")).toHaveCount(0);
+
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = "auto";
+      document.getElementById("projects")?.scrollIntoView();
+    });
+    await expect(page.locator('header a[aria-current="true"]')).toHaveText("Projects");
+  });
+
   test("the brand name in the nav never breaks mid-word, even on a phone viewport", async ({
     page,
   }) => {
