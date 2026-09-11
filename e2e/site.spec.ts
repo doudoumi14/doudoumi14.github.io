@@ -379,17 +379,17 @@ test.describe("Portfolio site", () => {
         damaged = true;
         break;
       }
-      await page.keyboard.down("Space");
-      await page.waitForTimeout(120);
-      await page.keyboard.up("Space");
+      // Hold forward through the whole descent. Releasing mid-air (or drifting
+      // back) pulls the player off the boss exactly when the landing needs to
+      // connect, which makes this test miss for reasons unrelated to the game.
       await page.keyboard.down("ArrowRight");
+      await page.waitForTimeout(150);
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(200);
+      await page.keyboard.up("Space");
       await page.waitForTimeout(260);
       await page.keyboard.up("ArrowRight");
       await page.waitForTimeout(420);
-      await page.keyboard.down("ArrowLeft");
-      await page.waitForTimeout(180);
-      await page.keyboard.up("ArrowLeft");
-      await page.waitForTimeout(120);
     }
 
     expect(damaged).toBe(true);

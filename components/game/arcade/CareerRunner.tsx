@@ -8,6 +8,7 @@ import { arcadeLevels, VIEW_H, VIEW_W } from "./levels";
 const LEFT_KEYS = new Set(["ArrowLeft", "a", "A"]);
 const RIGHT_KEYS = new Set(["ArrowRight", "d", "D"]);
 const JUMP_KEYS = new Set(["ArrowUp", "w", "W", " ", "Spacebar"]);
+const DEPLOY_KEYS = new Set(["e", "E", "Shift"]);
 
 export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,7 +36,7 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
       completed.current = true;
       // Score rewards collection and defeats, and penalises taking hits.
       const pickupScore = (next.collected / next.total) * 60;
-      const combat = Math.min(20, next.defeated * 5);
+      const combat = Math.min(20, next.defeated * 5 + next.deployed * 3);
       const cleanRun = Math.max(0, 20 - next.hits * 5);
       game.stop();
       onComplete({
@@ -53,6 +54,7 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
       if (LEFT_KEYS.has(event.key)) c.left = true;
       else if (RIGHT_KEYS.has(event.key)) c.right = true;
       else if (JUMP_KEYS.has(event.key)) c.jump = true;
+      else if (DEPLOY_KEYS.has(event.key)) c.deploy = true;
       else return;
       // Arrows and space would otherwise scroll the page under the dialog.
       event.preventDefault();
@@ -63,6 +65,7 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
       if (LEFT_KEYS.has(event.key)) c.left = false;
       else if (RIGHT_KEYS.has(event.key)) c.right = false;
       else if (JUMP_KEYS.has(event.key)) c.jump = false;
+      else if (DEPLOY_KEYS.has(event.key)) c.deploy = false;
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -95,6 +98,19 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
         </span>
       </div>
 
+      <div className="mb-2 flex items-center gap-3 text-sm">
+        <span className="shrink-0 text-xs tracking-wider text-subtle uppercase">Automation</span>
+        <span className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+          <span
+            className="block h-full rounded-full bg-accent transition-[width] duration-300"
+            style={{ width: `${Math.round((status?.charge ?? 0) * 100)}%` }}
+          />
+        </span>
+        <span className="shrink-0 text-xs text-subtle">
+          {(status?.charge ?? 0) >= 1 ? "ready — press E" : "recharging"}
+        </span>
+      </div>
+
       {status?.bossHp != null && status.bossHp > 0 && (
         <div className="mb-2 flex items-center gap-3 rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm">
           <span className="font-semibold text-red-400">BOSS</span>
@@ -120,7 +136,7 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="hidden text-xs text-subtle sm:block">
-          ← → or A/D to move · Space/↑ to jump · land on enemies to defeat them
+          ← → or A/D to move · Space/↑ to jump · E deploys automation
         </p>
 
         <div className="flex w-full gap-2 sm:w-auto">
@@ -132,6 +148,14 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
           </TouchButton>
           <TouchButton gameRef={gameRef} control="jump" label="Jump" primary>
             JUMP
+          </TouchButton>
+          <TouchButton
+            gameRef={gameRef}
+            control="deploy"
+            label="Deploy automation"
+            disabled={(status?.charge ?? 0) < 1}
+          >
+            DEPLOY
           </TouchButton>
         </div>
       </div>
@@ -146,12 +170,14 @@ function TouchButton({
   control,
   label,
   primary = false,
+  disabled = false,
   children,
 }: {
   gameRef: React.RefObject<ArcadeGame | null>;
-  control: "left" | "right" | "jump";
+  control: "left" | "right" | "jump" | "deploy";
   label: string;
   primary?: boolean;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   function set(down: boolean) {
@@ -163,6 +189,7 @@ function TouchButton({
     <button
       type="button"
       aria-label={label}
+      disabled={disabled}
       onPointerDown={(event) => {
         event.preventDefault();
         set(true);
@@ -173,7 +200,7 @@ function TouchButton({
       className={
         primary
           ? "flex-1 rounded-lg border border-accent bg-accent-soft py-3 text-sm font-semibold text-accent select-none sm:flex-none sm:px-5"
-          : "flex-1 rounded-lg border border-line py-3 text-lg select-none sm:flex-none sm:px-5"
+          : "flex-1 rounded-lg border border-line py-3 text-lg select-none disabled:opacity-40 sm:flex-none sm:px-5"
       }
     >
       {children}

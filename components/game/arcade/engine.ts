@@ -6,7 +6,15 @@ import {
   type EnemyType,
   type Rect,
 } from "./levels";
-import { drawBoss, drawEnemy, drawPickup, drawPlayer, type BossKind, type PickupIcon } from "./sprites";
+import {
+  drawBoss,
+  drawDrone,
+  drawEnemy,
+  drawPickup,
+  drawPlayer,
+  type BossKind,
+  type PickupIcon,
+} from "./sprites";
 
 const GRAVITY = 1800;
 const MOVE_SPEED = 300;
@@ -32,6 +40,9 @@ export interface GameStatus {
   bossMax: number;
   bossName: string;
   defeated: number;
+  /** 0-1. Fills as pickups are collected; at 1 an automation can be deployed. */
+  charge: number;
+  deployed: number;
 }
 
 interface Particle {
@@ -89,6 +100,15 @@ export interface Controls {
   left: boolean;
   right: boolean;
   jump: boolean;
+  deploy: boolean;
+}
+
+/** A deployed automation script: clears enemies and damages the boss. */
+interface Drone {
+  x: number;
+  y: number;
+  life: number;
+  hitBoss: boolean;
 }
 
 function overlaps(a: Rect, b: Rect) {
@@ -112,11 +132,21 @@ export class ArcadeGame {
   private camera = 0;
   private shake = 0;
   private invulnUntil = 0;
+  /**
+   * Short window after a successful stomp. A stomp launches the player upward,
+   * so on the next frame they are still inside the target but no longer
+   * descending — which used to register as a side hit and cost damage for a
+   * landing that actually connected. Deliberately separate from invulnUntil so
+   * a clean stomp never triggers the damage blink.
+   */
+  private stompGrace = 0;
 
   private pickups: Pickup[];
   private enemies: EnemyState[];
   private boss: BossState;
   private particles: Particle[] = [];
+  private drones: Drone[] = [];
+  private deployLatch = false;
   private floaters: { x: number; y: number; text: string; life: number; colour: string }[] = [];
 
   private status: GameStatus;
@@ -125,7 +155,7 @@ export class ArcadeGame {
   private time = 0;
   private running = false;
 
-  controls: Controls = { left: false, right: false, jump: false };
+  controls: Controls = { left: false, right: false, jump: false, deploy: false };
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -173,12 +203,17 @@ export class ArcadeGame {
       bossMax: level.boss.hits,
       bossName: level.boss.name,
       defeated: 0,
+      charge: 1,
+      deployed: 0,
     };
   }
 
   start() {
     this.running = true;
     this.last = performance.now();
+    // Push the opening state so the HUD reflects the starting charge instead of
+    // waiting for the first pickup or hit to emit.
+    this.emit();
     this.raf = requestAnimationFrame(this.loop);
   }
 
@@ -204,9 +239,18 @@ export class ArcadeGame {
     if (this.status.finished) return;
     this.status.elapsed += dt;
 
+    // Passive regen guarantees the boss is always beatable by automation alone,
+    // so the level never dead-ends for a player who cannot land stomps.
+    if (this.status.charge < 1) {
+      const before = this.status.charge;
+      this.status.charge = Math.min(1, this.status.charge + dt * 0.07);
+      if (before < 1 && this.status.charge >= 1) this.emit();
+    }
+
     this.movePlayer(dt);
     this.updatePickups();
     this.updateEnemies(dt);
+    this.updateDrones(dt);
     this.updateBoss(dt);
     this.updateHazards();
     this.updateEffects(dt);
@@ -273,6 +317,7 @@ export class ArcadeGame {
       }
       pickup.taken = true;
       this.status.collected += 1;
+      this.status.charge = Math.min(1, this.status.charge + 1 / 3);
       this.burst(pickup.x, pickup.y, `hsl(${pickup.hue} 85% 62%)`);
       this.float(pickup.x, pickup.y - 16, pickup.label, `hsl(${pickup.hue} 85% 70%)`);
       this.emit();
@@ -309,14 +354,97 @@ export class ArcadeGame {
       if (fromAbove) {
         enemy.dead = true;
         this.status.defeated += 1;
+        this.status.charge = Math.min(1, this.status.charge + 0.15);
         this.vy = STOMP_BOUNCE;
+        this.stompGrace = this.time * 1000 + 700;
         this.shake = 6;
         this.burst(enemy.x, enemy.y, `hsl(${enemy.hue} 85% 60%)`);
         this.emit();
-      } else if (this.time * 1000 > this.invulnUntil) {
+      } else if (this.time * 1000 > this.invulnUntil && this.time * 1000 > this.stompGrace) {
         this.takeHit();
       }
     }
+  }
+
+  // Automation is the level's other win condition: bank four pickups, deploy,
+  // and the script clears what is ahead of you. Fits the job it is modelling,
+  // and gives a way past a boss without pixel-perfect platforming.
+  private updateDrones(dt: number) {
+    if (this.controls.deploy && !this.deployLatch && this.status.charge >= 1) {
+      this.deployLatch = true;
+      this.status.charge = 0;
+      this.status.deployed += 1;
+      this.drones.push({ x: this.x + PLAYER_W, y: this.y + 6, life: 3.2, hitBoss: false });
+      this.float(this.x, this.y - 18, "automation deployed", this.level.theme.accent);
+      this.emit();
+    }
+    if (!this.controls.deploy) this.deployLatch = false;
+
+    for (const drone of this.drones) {
+      drone.life -= dt;
+      drone.x += 430 * dt;
+      // Drifts toward the boss's height so it reliably connects.
+      const targetY = this.boss.engaged ? this.boss.y + 20 : drone.y;
+      drone.y += (targetY - drone.y) * Math.min(1, dt * 2);
+
+      if (Math.random() < 0.5) {
+        this.particles.push({
+          x: drone.x - 10,
+          y: drone.y + 4,
+          vx: -60 - Math.random() * 60,
+          vy: (Math.random() - 0.5) * 40,
+          life: 0.35,
+          colour: this.level.theme.accent,
+        });
+      }
+
+      const box = { x: drone.x - 10, y: drone.y - 8, w: 20, h: 16 };
+
+      for (const enemy of this.enemies) {
+        if (enemy.dead) continue;
+        if (!overlaps(box, { x: enemy.x - 12, y: enemy.y - 14, w: 24, h: 28 })) continue;
+        enemy.dead = true;
+        this.status.defeated += 1;
+        this.burst(enemy.x, enemy.y, this.level.theme.accent);
+        this.emit();
+      }
+
+      const boss = this.boss;
+      if (
+        !drone.hitBoss &&
+        boss.hp > 0 &&
+        boss.engaged &&
+        overlaps(box, { x: boss.x - BOSS_W / 2, y: boss.y, w: BOSS_W, h: BOSS_H })
+      ) {
+        drone.hitBoss = true;
+        drone.life = 0;
+        this.damageBoss();
+      }
+    }
+
+    this.drones = this.drones.filter((d) => d.life > 0 && d.x < this.level.width + 40);
+  }
+
+  /** Shared by a stomp and by a deployed automation. */
+  private damageBoss() {
+    const boss = this.boss;
+    if (boss.hp <= 0 || this.time * 1000 <= boss.invulnUntil) return;
+
+    boss.hp -= 1;
+    boss.invulnUntil = this.time * 1000 + 700;
+    this.shake = 14;
+    this.burst(boss.x, boss.y + 20, `hsl(${boss.hue} 85% 62%)`);
+
+    if (boss.hp <= 0) {
+      for (let i = 0; i < 4; i++) {
+        this.burst(boss.x + (Math.random() - 0.5) * 60, boss.y + Math.random() * 50, "#ffd866");
+      }
+      this.float(boss.x, boss.y, `${boss.name} defeated`, "#ffd866");
+      this.status.finished = true;
+      this.status.won = true;
+      this.shake = 20;
+    }
+    this.emitBoss();
   }
 
   private updateBoss(dt: number) {
@@ -365,29 +493,32 @@ export class ArcadeGame {
     // player starts descending.
     const fromAbove = this.vy > 0 && this.y + PLAYER_H <= boss.y + BOSS_H * 0.55;
     if (fromAbove && this.time * 1000 > boss.invulnUntil) {
-      boss.hp -= 1;
-      boss.invulnUntil = this.time * 1000 + 700;
       this.vy = STOMP_BOUNCE;
-      this.shake = 14;
-      this.burst(boss.x, boss.y + 20, `hsl(${boss.hue} 85% 62%)`);
-
-      if (boss.hp <= 0) {
-        for (let i = 0; i < 4; i++) {
-          this.burst(boss.x + (Math.random() - 0.5) * 60, boss.y + Math.random() * 50, "#ffd866");
-        }
-        this.float(boss.x, boss.y, `${boss.name} defeated`, "#ffd866");
-        this.status.finished = true;
-        this.status.won = true;
-        this.shake = 20;
-      }
-      this.emitBoss();
-    } else if (!fromAbove && this.time * 1000 > this.invulnUntil) {
+      // Grace has to outlast the whole bounce arc (2 * 430 / 1800 s), or the
+      // landing gets punished for a hit that actually connected.
+      this.stompGrace = this.time * 1000 + 900;
+      // Knock clear of the boss as well. Bouncing straight up lands the player
+      // back on top of it, touching its side the instant grace lapses, which
+      // reads as "I stomped it and still took damage".
+      const away = this.x + PLAYER_W / 2 < boss.x ? -1 : 1;
+      this.x = Math.max(
+        0,
+        Math.min(this.level.width - PLAYER_W, this.x + away * (BOSS_W / 2 + 26)),
+      );
+      this.damageBoss();
+    } else if (
+      !fromAbove &&
+      this.time * 1000 > this.invulnUntil &&
+      this.time * 1000 > this.stompGrace &&
+      // While the boss is flashing from a hit, that contact is already resolved.
+      this.time * 1000 > boss.invulnUntil
+    ) {
       this.takeHit();
     }
   }
 
   private updateHazards() {
-    if (this.time * 1000 <= this.invulnUntil) return;
+    if (this.time * 1000 <= this.invulnUntil || this.time * 1000 <= this.stompGrace) return;
     for (const hazard of this.level.hazards) {
       if (!overlaps(this.playerBox(), hazard)) continue;
       this.takeHit();
@@ -480,6 +611,7 @@ export class ArcadeGame {
     this.drawPickups();
     this.drawEnemies();
     this.drawParticles();
+    this.drawDrones();
     this.drawPlayer();
     this.drawFloaters();
 
@@ -586,9 +718,14 @@ export class ArcadeGame {
       drawPickup(ctx, pickup.icon, pickup.hue, this.time + pickup.x);
       ctx.shadowBlur = 0;
 
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
       ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif";
       ctx.textAlign = "center";
+      const w = ctx.measureText(pickup.label).width;
+      ctx.fillStyle = "rgba(8,10,18,0.72)";
+      ctx.beginPath();
+      ctx.roundRect(-w / 2 - 6, -32, w + 12, 16, 5);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
       ctx.fillText(pickup.label, 0, -20);
       ctx.restore();
     }
@@ -651,6 +788,19 @@ export class ArcadeGame {
     ctx.font = "700 12px ui-sans-serif, system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(boss.name.toUpperCase(), boss.x, y - 10);
+  }
+
+  private drawDrones() {
+    const ctx = this.ctx;
+    for (const drone of this.drones) {
+      if (!this.visible(drone.x)) continue;
+      ctx.save();
+      ctx.translate(drone.x, drone.y);
+      ctx.shadowColor = this.level.theme.accent;
+      ctx.shadowBlur = 14;
+      drawDrone(ctx, this.level.theme.accent, this.time);
+      ctx.restore();
+    }
   }
 
   private drawParticles() {

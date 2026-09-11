@@ -622,3 +622,33 @@ export function drawPlayer(
 
   ctx.restore();
 }
+
+/** The deployed automation: a small drone with a spinning rotor. */
+export function drawDrone(ctx: CanvasRenderingContext2D, accent: string, time: number) {
+  ctx.save();
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.roundRect(-9, -6, 18, 12, 4);
+  ctx.fill();
+
+  ctx.fillStyle = INK;
+  ctx.beginPath();
+  ctx.arc(4, -1, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // rotor blur
+  const spin = Math.abs(Math.sin(time * 30));
+  ctx.strokeStyle = accent;
+  ctx.globalAlpha = 0.8;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-10 * spin - 2, -9);
+  ctx.lineTo(10 * spin + 2, -9);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, -6);
+  ctx.lineTo(0, -9);
+  ctx.stroke();
+  ctx.restore();
+}
