@@ -1,4 +1,3 @@
-import { drawCreature, drawEnemy } from "./creatures";
 import {
   GROUND_Y,
   VIEW_H,
@@ -6,8 +5,8 @@ import {
   type ArcadeLevel,
   type EnemyType,
   type Rect,
-  type Species,
 } from "./levels";
+import { drawBoss, drawEnemy, drawPickup, drawPlayer, type BossKind, type PickupIcon } from "./sprites";
 
 const GRAVITY = 1800;
 const MOVE_SPEED = 300;
@@ -48,7 +47,7 @@ interface Pickup {
   x: number;
   y: number;
   label: string;
-  species: Species;
+  icon: PickupIcon;
   hue: number;
   taken: boolean;
   pop: number;
@@ -79,7 +78,7 @@ interface BossState {
   hp: number;
   max: number;
   name: string;
-  species: Species;
+  kind: BossKind;
   hue: number;
   invulnUntil: number;
   onGround: boolean;
@@ -156,7 +155,7 @@ export class ArcadeGame {
       hp: level.boss.hits,
       max: level.boss.hits,
       name: level.boss.name,
-      species: level.boss.species,
+      kind: level.boss.kind,
       hue: level.boss.hue,
       invulnUntil: 0,
       onGround: true,
@@ -303,8 +302,10 @@ export class ArcadeGame {
       const box = { x: enemy.x - 12, y: enemy.y - 14, w: 24, h: 28 };
       if (!overlaps(this.playerBox(), box)) continue;
 
-      // Falling onto an enemy defeats it; anything else costs a hit.
-      const fromAbove = this.vy > 120 && this.y + PLAYER_H - enemy.y < 26;
+      // Any descent that meets the upper half counts as a stomp. Requiring a
+      // fast fall made contact feel arbitrary — you would clip the side and
+      // take a hit on jumps that visually landed on top.
+      const fromAbove = this.vy > 0 && this.y + PLAYER_H <= enemy.y + 16;
       if (fromAbove) {
         enemy.dead = true;
         this.status.defeated += 1;
@@ -360,7 +361,9 @@ export class ArcadeGame {
     const box = { x: boss.x - BOSS_W / 2, y: boss.y, w: BOSS_W, h: BOSS_H };
     if (!overlaps(this.playerBox(), box)) return;
 
-    const fromAbove = this.vy > 120 && this.y + PLAYER_H - boss.y < 30;
+    // Generous stomp band: the top ~55% of the boss, from the instant the
+    // player starts descending.
+    const fromAbove = this.vy > 0 && this.y + PLAYER_H <= boss.y + BOSS_H * 0.55;
     if (fromAbove && this.time * 1000 > boss.invulnUntil) {
       boss.hp -= 1;
       boss.invulnUntil = this.time * 1000 + 700;
@@ -580,7 +583,7 @@ export class ArcadeGame {
 
       ctx.shadowColor = `hsl(${pickup.hue} 90% 60%)`;
       ctx.shadowBlur = 14;
-      drawCreature(ctx, pickup.species, { hue: pickup.hue, time: this.time + pickup.x });
+      drawPickup(ctx, pickup.icon, pickup.hue, this.time + pickup.x);
       ctx.shadowBlur = 0;
 
       ctx.fillStyle = "rgba(255,255,255,0.92)";
@@ -605,7 +608,14 @@ export class ArcadeGame {
       } else {
         ctx.translate(enemy.x, enemy.y);
       }
-      drawEnemy(ctx, enemy.type, enemy.hue, this.time + enemy.phase, enemy.dir >= 0 ? 1 : -1);
+      drawEnemy(
+        ctx,
+        this.level.enemySkin,
+        enemy.type === "flyer",
+        enemy.hue,
+        this.time + enemy.phase,
+        enemy.dir >= 0 ? 1 : -1,
+      );
       ctx.restore();
     }
   }
@@ -621,12 +631,7 @@ export class ArcadeGame {
     ctx.translate(boss.x, boss.y + BOSS_H / 2);
     ctx.shadowColor = `hsl(${boss.hue} 90% 55%)`;
     ctx.shadowBlur = 26;
-    drawCreature(ctx, boss.species, {
-      hue: boss.hue,
-      scale: 3.1,
-      time: this.time,
-      hurt,
-    });
+    drawBoss(ctx, boss.kind, boss.hue, this.time, 2.0, hurt);
     ctx.restore();
 
     if (!boss.engaged) return;
@@ -672,45 +677,24 @@ export class ArcadeGame {
 
   private drawPlayer() {
     const ctx = this.ctx;
-    const t = this.level.theme;
     const blink = this.time * 1000 < this.invulnUntil && Math.floor(this.time * 20) % 2 === 0;
     if (blink) return;
 
-    const cx = this.x + PLAYER_W / 2;
-    const cy = this.y + PLAYER_H / 2;
     const stretch = this.onGround ? 1 : Math.max(0.82, Math.min(1.18, 1 + this.vy / 2600));
 
     ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(this.x + PLAYER_W / 2, this.y + PLAYER_H / 2);
     ctx.scale(this.facing, 1);
-
-    ctx.strokeStyle = t.groundTop;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    if (this.onGround && Math.abs(this.vx) > 0) {
-      const swing = Math.sin(this.runPhase) * 7;
-      ctx.moveTo(-3, PLAYER_H / 2 - 10);
-      ctx.lineTo(-3 + swing, PLAYER_H / 2);
-      ctx.moveTo(4, PLAYER_H / 2 - 10);
-      ctx.lineTo(4 - swing, PLAYER_H / 2);
-    } else {
-      ctx.moveTo(-3, PLAYER_H / 2 - 10);
-      ctx.lineTo(-5, PLAYER_H / 2 - 2);
-      ctx.moveTo(4, PLAYER_H / 2 - 10);
-      ctx.lineTo(6, PLAYER_H / 2 - 2);
-    }
-    ctx.stroke();
-
-    ctx.fillStyle = t.accent;
-    ctx.beginPath();
-    ctx.roundRect(-PLAYER_W / 2, (-PLAYER_H / 2) * stretch, PLAYER_W, PLAYER_H * stretch - 8, 7);
-    ctx.fill();
-
-    ctx.fillStyle = "rgba(10,15,30,0.85)";
-    ctx.beginPath();
-    ctx.roundRect(-2, (-PLAYER_H / 2) * stretch + 7, 12, 7, 3);
-    ctx.fill();
-
+    drawPlayer(
+      ctx,
+      this.level.theme.accent,
+      this.time,
+      Math.abs(this.vx) > 0,
+      this.onGround,
+      stretch,
+      this.runPhase,
+    );
     ctx.restore();
   }
+
 }

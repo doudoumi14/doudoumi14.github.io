@@ -24,11 +24,17 @@ Open `http://localhost:3000`.
 The experience section is playable. Each of the four roles is a side-scrolling
 level themed to that job — the flight deck at CAE, the automation floor at
 Archer, the compliance vault at Desjardins, and the network core at Bell.
-Every keyword is its own creature — six species (slime, bat, bug, orb,
-crystal, ghost), each with a distinct hue, so no two pickups look alike.
+Every sprite is the thing it names rather than a generic monster. Pickups are
+domain icons chosen to match the label — a gauge for a rate, a shield for
+compliance, a gear for automation, a packet for network data, a document for
+a record, a spark for raw performance — each in its own hue. The player is an
+engineer in a hard hat.
 Patrolling and flying enemies can be defeated by landing on them, and each
-stage ends with a named boss drawn from that job's real adversary: the Frame
-Dropper, the Manual Process, the Audit Findings, Peak Load. Beating the boss
+stage ends with a boss that looks like the problem it is: the Frame Dropper is
+a monitor tearing its own picture, the Manual Process is a clipboard of
+half-ticked forms with a jittering pen, the Audit Findings is a report under a
+magnifier with a red stamp, and Peak Load is a traffic chart spiking into the
+red. Beating the boss
 clears the level and reveals that role's real outcomes. Progress is kept in
 `localStorage`.
 

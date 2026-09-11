@@ -5,14 +5,14 @@ export interface Rect {
   h: number;
 }
 
-/** Each pickup is a small creature; the species sets its silhouette. */
-export type Species = "slime" | "bat" | "bug" | "orb" | "crystal" | "ghost";
+import type { BossKind, EnemySkin, PickupIcon } from "./sprites";
 
 export interface Collectible {
   x: number;
   y: number;
   label: string;
-  species: Species;
+  /** Chosen to match what the label means, not for decoration. */
+  icon: PickupIcon;
   /** Degrees. Every pickup in a level gets its own hue so none look alike. */
   hue: number;
 }
@@ -34,7 +34,7 @@ export interface Boss {
   name: string;
   /** Stomps needed to finish it. */
   hits: number;
-  species: Species;
+  kind: BossKind;
   hue: number;
 }
 
@@ -58,6 +58,8 @@ export interface ArcadeLevel {
   collectibles: Collectible[];
   hazards: Rect[];
   enemies: Enemy[];
+  /** Enemies are drawn as that level's own hazard, not a shared monster. */
+  enemySkin: EnemySkin;
   boss: Boss;
   theme: LevelTheme;
 }
@@ -92,14 +94,14 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 2420, y: 250, w: 130, h: 18 },
     ],
     collectibles: [
-      { x: 260, y: 352, label: "60fps", species: "orb", hue: 200 },
-      { x: 440, y: 272, label: "LOD", species: "crystal", hue: 280 },
-      { x: 748, y: 206, label: "cull", species: "bat", hue: 330 },
-      { x: 1070, y: 272, label: "batch", species: "slime", hue: 150 },
-      { x: 1382, y: 190, label: "profile", species: "ghost", hue: 45 },
-      { x: 1620, y: 274, label: "shader", species: "bug", hue: 20 },
-      { x: 1938, y: 198, label: "fidelity", species: "crystal", hue: 190 },
-      { x: 2200, y: 270, label: "ship", species: "orb", hue: 100 },
+      { x: 260, y: 352, label: "60fps", icon: "gauge", hue: 200 },
+      { x: 440, y: 272, label: "LOD", icon: "gear", hue: 280 },
+      { x: 748, y: 206, label: "cull", icon: "spark", hue: 330 },
+      { x: 1070, y: 272, label: "batch", icon: "gear", hue: 150 },
+      { x: 1382, y: 190, label: "profile", icon: "gauge", hue: 45 },
+      { x: 1620, y: 274, label: "shader", icon: "spark", hue: 20 },
+      { x: 1938, y: 198, label: "fidelity", icon: "gauge", hue: 190 },
+      { x: 2200, y: 270, label: "ship", icon: "packet", hue: 100 },
     ],
     hazards: [
       { x: 600, y: 380, w: 52, h: 20 },
@@ -112,7 +114,8 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 1480, y: 210, type: "flyer", range: 52, speed: 60, hue: 320 },
       { x: 2000, y: GROUND_Y - 30, type: "patroller", range: 130, speed: 70, hue: 8 },
     ],
-    boss: { x: 2720, name: "Frame Dropper", hits: 3, species: "slime", hue: 0 },
+    enemySkin: "glitch",
+    boss: { x: 2720, name: "Frame Dropper", hits: 3, kind: "frame", hue: 5 },
     theme: {
       sky: ["#1b3a63", "#5c8fc4"],
       far: "#2f5680",
@@ -145,14 +148,14 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 2340, y: 214, w: 130, h: 18 },
     ],
     collectibles: [
-      { x: 385, y: 296, label: "intake", species: "slime", hue: 265 },
-      { x: 575, y: 252, label: "validate", species: "bug", hue: 200 },
-      { x: 765, y: 208, label: "enrich", species: "orb", hue: 310 },
-      { x: 955, y: 164, label: "route", species: "bat", hue: 160 },
-      { x: 1210, y: 256, label: "approve", species: "crystal", hue: 50 },
-      { x: 1435, y: 212, label: "report", species: "ghost", hue: 225 },
-      { x: 1655, y: 168, label: "-40% manual", species: "slime", hue: 15 },
-      { x: 1888, y: 124, label: "on time", species: "orb", hue: 120 },
+      { x: 385, y: 296, label: "intake", icon: "doc", hue: 265 },
+      { x: 575, y: 252, label: "validate", icon: "shield", hue: 200 },
+      { x: 765, y: 208, label: "enrich", icon: "doc", hue: 310 },
+      { x: 955, y: 164, label: "route", icon: "packet", hue: 160 },
+      { x: 1210, y: 256, label: "approve", icon: "shield", hue: 50 },
+      { x: 1435, y: 212, label: "report", icon: "doc", hue: 225 },
+      { x: 1655, y: 168, label: "-40% manual", icon: "gauge", hue: 15 },
+      { x: 1888, y: 124, label: "on time", icon: "gauge", hue: 120 },
     ],
     hazards: [
       { x: 470, y: 380, w: 54, h: 20 },
@@ -166,7 +169,8 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 1960, y: GROUND_Y - 30, type: "patroller", range: 140, speed: 78, hue: 290 },
       { x: 2200, y: 200, type: "flyer", range: 58, speed: 64, hue: 275 },
     ],
-    boss: { x: 2620, name: "Manual Process", hits: 3, species: "ghost", hue: 285 },
+    enemySkin: "form",
+    boss: { x: 2620, name: "Manual Process", hits: 3, kind: "clipboard", hue: 285 },
     theme: {
       sky: ["#2a1f4d", "#6b4ea8"],
       far: "#3b2b6b",
@@ -202,15 +206,15 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 2110, y: 300, w: 130, h: 18 },
     ],
     collectibles: [
-      { x: 355, y: 282, label: "retention", species: "crystal", hue: 160 },
-      { x: 355, y: 180, label: "audit", species: "ghost", hue: 45 },
-      { x: 575, y: 124, label: "consent", species: "orb", hue: 200 },
-      { x: 815, y: 278, label: "PII", species: "bug", hue: 0 },
-      { x: 995, y: 104, label: "governance", species: "crystal", hue: 265 },
-      { x: 1240, y: 256, label: "migration", species: "slime", hue: 120 },
-      { x: 1455, y: 86, label: "-20% backlog", species: "bat", hue: 315 },
-      { x: 1710, y: 248, label: "signed off", species: "orb", hue: 85 },
-      { x: 1935, y: 168, label: "approved", species: "slime", hue: 25 },
+      { x: 355, y: 282, label: "retention", icon: "doc", hue: 160 },
+      { x: 355, y: 180, label: "audit", icon: "doc", hue: 45 },
+      { x: 575, y: 124, label: "consent", icon: "shield", hue: 200 },
+      { x: 815, y: 278, label: "PII", icon: "shield", hue: 0 },
+      { x: 995, y: 104, label: "governance", icon: "shield", hue: 265 },
+      { x: 1240, y: 256, label: "migration", icon: "packet", hue: 120 },
+      { x: 1455, y: 86, label: "-20% backlog", icon: "gauge", hue: 315 },
+      { x: 1710, y: 248, label: "signed off", icon: "shield", hue: 85 },
+      { x: 1935, y: 168, label: "approved", icon: "shield", hue: 25 },
     ],
     hazards: [
       { x: 660, y: 380, w: 56, h: 20 },
@@ -224,7 +228,8 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 1500, y: GROUND_Y - 30, type: "patroller", range: 130, speed: 74, hue: 30 },
       { x: 1820, y: 150, type: "flyer", range: 50, speed: 80, hue: 48 },
     ],
-    boss: { x: 2500, name: "Audit Findings", hits: 4, species: "crystal", hue: 42 },
+    enemySkin: "flag",
+    boss: { x: 2500, name: "Audit Findings", hits: 4, kind: "stamp", hue: 8 },
     theme: {
       sky: ["#123a34", "#2f8f6f"],
       far: "#1c5449",
@@ -256,14 +261,14 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 2560, y: 232, w: 150, h: 18 },
     ],
     collectibles: [
-      { x: 360, y: 264, label: "telemetry", species: "orb", hue: 195 },
-      { x: 680, y: 194, label: "forecast", species: "bug", hue: 275 },
-      { x: 1015, y: 260, label: "AI model", species: "crystal", hue: 160 },
-      { x: 1340, y: 154, label: "automate", species: "ghost", hue: 40 },
-      { x: 1630, y: 250, label: "-30% incidents", species: "slime", hue: 0 },
-      { x: 1965, y: 178, label: "capacity", species: "bat", hue: 300 },
-      { x: 2290, y: 254, label: "90% reports", species: "orb", hue: 95 },
-      { x: 2620, y: 186, label: "99.9%", species: "crystal", hue: 220 },
+      { x: 360, y: 264, label: "telemetry", icon: "packet", hue: 195 },
+      { x: 680, y: 194, label: "forecast", icon: "gauge", hue: 275 },
+      { x: 1015, y: 260, label: "AI model", icon: "spark", hue: 160 },
+      { x: 1340, y: 154, label: "automate", icon: "gear", hue: 40 },
+      { x: 1630, y: 250, label: "-30% incidents", icon: "gauge", hue: 0 },
+      { x: 1965, y: 178, label: "capacity", icon: "gauge", hue: 300 },
+      { x: 2290, y: 254, label: "90% reports", icon: "doc", hue: 95 },
+      { x: 2620, y: 186, label: "99.9%", icon: "gauge", hue: 220 },
     ],
     hazards: [
       { x: 520, y: 380, w: 54, h: 20 },
@@ -280,7 +285,8 @@ export const arcadeLevels: Record<string, ArcadeLevel> = {
       { x: 2150, y: 190, type: "flyer", range: 70, speed: 70, hue: 350 },
       { x: 2450, y: GROUND_Y - 30, type: "patroller", range: 140, speed: 88, hue: 352 },
     ],
-    boss: { x: 3020, name: "Peak Load", hits: 4, species: "bat", hue: 350 },
+    enemySkin: "alert",
+    boss: { x: 3020, name: "Peak Load", hits: 4, kind: "surge", hue: 350 },
     theme: {
       sky: ["#0a1430", "#1c3f7a"],
       far: "#16305c",
