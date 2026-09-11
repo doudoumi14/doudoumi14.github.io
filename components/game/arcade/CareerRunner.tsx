@@ -33,14 +33,15 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
       if (!next.finished || completed.current) return;
 
       completed.current = true;
-      // Score rewards collection and penalises hazard hits.
-      const pickupScore = (next.collected / next.total) * 80;
+      // Score rewards collection and defeats, and penalises taking hits.
+      const pickupScore = (next.collected / next.total) * 60;
+      const combat = Math.min(20, next.defeated * 5);
       const cleanRun = Math.max(0, 20 - next.hits * 5);
       game.stop();
       onComplete({
         won: true,
-        score: Math.round(pickupScore + cleanRun),
-        detail: `${next.collected}/${next.total} ${level.pickupName} · ${next.hits} hit${next.hits === 1 ? "" : "s"} · ${next.elapsed.toFixed(1)}s`,
+        score: Math.round(pickupScore + combat + cleanRun),
+        detail: `${next.bossName} defeated · ${next.collected}/${next.total} ${level.pickupName} · ${next.defeated} enemies · ${next.hits} hit${next.hits === 1 ? "" : "s"}`,
       });
     });
 
@@ -85,11 +86,29 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
             {status?.collected ?? 0}/{status?.total ?? level.collectibles.length}{" "}
             {level.pickupName}
           </span>
+          {(status?.defeated ?? 0) > 0 && (
+            <span className="tabular-nums text-emerald-400">{status?.defeated} defeated</span>
+          )}
           {(status?.hits ?? 0) > 0 && (
-            <span className="text-red-400 tabular-nums">{status?.hits} hit</span>
+            <span className="tabular-nums text-red-400">{status?.hits} hit</span>
           )}
         </span>
       </div>
+
+      {status?.bossHp != null && status.bossHp > 0 && (
+        <div className="mb-2 flex items-center gap-3 rounded-lg border border-red-400/40 bg-red-400/10 px-3 py-2 text-sm">
+          <span className="font-semibold text-red-400">BOSS</span>
+          <span className="font-medium">{status.bossName}</span>
+          <span className="ml-auto flex gap-1" aria-label={`${status.bossHp} of ${status.bossMax} health remaining`}>
+            {Array.from({ length: status.bossMax }).map((_, i) => (
+              <span
+                key={i}
+                className={`h-2.5 w-5 rounded-sm ${i < status.bossHp! ? "bg-red-400" : "bg-white/15"}`}
+              />
+            ))}
+          </span>
+        </div>
+      )}
 
       <canvas
         ref={canvasRef}
@@ -101,7 +120,7 @@ export function CareerRunner({ levelId, onComplete }: MinigameProps & { levelId:
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <p className="hidden text-xs text-subtle sm:block">
-          ← → or A/D to move · Space/↑ to jump · reach the flag
+          ← → or A/D to move · Space/↑ to jump · land on enemies to defeat them
         </p>
 
         <div className="flex w-full gap-2 sm:w-auto">

@@ -307,35 +307,56 @@ test.describe("Portfolio site", () => {
     await expect(game.getByText(/0\/\d+ frames/)).toBeVisible();
   });
 
-  test("a level can be played to the flag and reveals the real achievements", async ({ page }) => {
-    test.setTimeout(120_000);
+  test("a level can be played through its boss and reveals the real achievements", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
 
     await page.goto("/");
     await waitForHydration(page);
     await page.getByRole("button", { name: /play my career/i }).click();
     const game = page.getByRole("dialog", { name: "Career mode" });
 
-    await game.getByRole("button", { name: /Archer/ }).first().click();
+    await game.getByRole("button", { name: /CAE/ }).first().click();
     await game.getByRole("button", { name: "Start level" }).click();
     await expect(game.locator("canvas")).toBeVisible();
 
-    // Run right and jump on a rhythm until the flag is reached.
-    await page.keyboard.down("ArrowRight");
     const cleared = game.getByText(/level cleared/i);
-    const deadline = Date.now() + 90_000;
-    while (Date.now() < deadline) {
-      if (await cleared.count()) break;
+    const bossBanner = game.getByText("BOSS", { exact: true });
+
+    // Run right, jumping on a rhythm, until the boss wakes up.
+    await page.keyboard.down("ArrowRight");
+    const runDeadline = Date.now() + 60_000;
+    while (Date.now() < runDeadline) {
+      if ((await bossBanner.count()) || (await cleared.count())) break;
       await page.keyboard.down("Space");
-      await page.waitForTimeout(140);
+      await page.waitForTimeout(130);
       await page.keyboard.up("Space");
-      await page.waitForTimeout(360);
+      await page.waitForTimeout(320);
     }
     await page.keyboard.up("ArrowRight");
+    await expect(bossBanner).toBeVisible();
+
+    // Stomping is the only way through: jump first, then drift forward so the
+    // descent lands on top of it rather than walking into its side.
+    const fightDeadline = Date.now() + 90_000;
+    while (Date.now() < fightDeadline) {
+      if (await cleared.count()) break;
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(120);
+      await page.keyboard.up("Space");
+      await page.keyboard.down("ArrowRight");
+      await page.waitForTimeout(260);
+      await page.keyboard.up("ArrowRight");
+      await page.waitForTimeout(420);
+      await page.keyboard.down("ArrowLeft");
+      await page.waitForTimeout(180);
+      await page.keyboard.up("ArrowLeft");
+      await page.waitForTimeout(120);
+    }
 
     await expect(cleared).toBeVisible();
-    // The reward panel must surface the figures from the resume.
-    await expect(game.getByText("25% ahead of schedule")).toBeVisible();
-    await expect(game.getByText("40% less manual data entry")).toBeVisible();
+    await expect(game.getByText("30% fidelity gain")).toBeVisible();
   });
 
   test("career progress persists across a reload", async ({ page }) => {

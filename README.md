@@ -24,8 +24,19 @@ Open `http://localhost:3000`.
 The experience section is playable. Each of the four roles is a side-scrolling
 level themed to that job — the flight deck at CAE, the automation floor at
 Archer, the compliance vault at Desjardins, and the network core at Bell.
-Collect the pickups, dodge the hazards, reach the flag; clearing a level
-reveals the real outcomes from that role. Progress is kept in `localStorage`.
+Every keyword is its own creature — six species (slime, bat, bug, orb,
+crystal, ghost), each with a distinct hue, so no two pickups look alike.
+Patrolling and flying enemies can be defeated by landing on them, and each
+stage ends with a named boss drawn from that job's real adversary: the Frame
+Dropper, the Manual Process, the Audit Findings, Peak Load. Beating the boss
+clears the level and reveals that role's real outcomes. Progress is kept in
+`localStorage`.
+
+The four stages are structurally different, not just recoloured: long runway
+jumps at CAE, a rising staircase at Archer, tight vertical chambers at
+Desjardins, and wide spans thick with flyers at Bell.
+
+![A level in progress](docs/career-levels.png)
 
 The game is a small canvas engine in `components/game/arcade` — gravity and
 AABB collision, a parallax backdrop, particles and screen shake, with keyboard

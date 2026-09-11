@@ -22,7 +22,7 @@ export const careerLevels: CareerLevel[] = [
     brief:
       "Flight simulators have to hold a steady frame rate or the training loses fidelity. My job was profiling the Prodigy engine's C++ render path and cutting the expensive work.",
     objective:
-      "Run the flight deck, collect the frames, and dodge the frame drops. Reach the flag.",
+      "Catch the frames, stomp the frame-drops, and bring down the Frame Dropper at the end.",
     rewards: ["30% fidelity gain", "Shipped into high-value training contracts"],
     skills: ["C++", "Performance profiling", "Real-time rendering"],
   },
@@ -33,7 +33,7 @@ export const careerLevels: CareerLevel[] = [
     role: "Development Team Lead — Salesforce & Automation",
     brief:
       "Leading a squad building Salesforce workflows. The wins came from replacing manual steps with automation that ran in the right order, every time.",
-    objective: "Cross the automation floor collecting each pipeline stage. Avoid the manual-entry pits.",
+    objective: "Climb the pipeline collecting each stage, then take out the Manual Process itself.",
     rewards: ["25% ahead of schedule", "40% less manual data entry"],
     skills: ["Apex", "Salesforce", "Team leadership"],
   },
@@ -44,7 +44,7 @@ export const careerLevels: CareerLevel[] = [
     role: "Functional Analyst — Digital Strategy",
     brief:
       "Financial products carry compliance weight. The work was translating between business and engineering, and keeping the backlog from burying the delivery team.",
-    objective: "Work through the compliance vault, picking up every requirement on the way to the flag.",
+    objective: "Scale the vault, gather every requirement, and clear the Audit Findings guarding the exit.",
     rewards: ["20% smaller backlog", "Migration delivered within compliance"],
     skills: ["Requirements analysis", "Data governance", "Risk management"],
   },
@@ -55,7 +55,7 @@ export const careerLevels: CareerLevel[] = [
     role: "Lead Technology Consultant — Capacity, Performance & Automation",
     brief:
       "Enterprise infrastructure at national scale. Capacity planning is the difference between a quiet night and an outage, so we moved it from reactive to predictive.",
-    objective: "Route packets through the network core. Collect the capacity wins and survive the overloads.",
+    objective: "Route the packets through the core, survive the surge, and beat Peak Load.",
     rewards: ["30% fewer interruptions", "90% of reporting automated", "99.9% availability"],
     skills: ["Python", "FastAPI", "AI/ML capacity modelling", "Network automation"],
   },
