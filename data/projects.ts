@@ -4,6 +4,8 @@ export interface Project {
   description: string;
   tech: string[];
   repo: string;
+  /** Deployed and clickable, where one exists. */
+  live?: string;
   highlights: string[];
 }
 
@@ -15,6 +17,7 @@ export const projects: Project[] = [
       "Five questions become a target pot, a stocks/bonds split and an order of tax-sheltered accounts to fill. Built because people near retirement pay a percentage of their savings for stock picking they do not need.",
     tech: ["Next.js", "TypeScript", "Tailwind", "SVG charts", "Vitest", "Playwright"],
     repo: "boring-on-purpose",
+    live: "https://invest.adembrouri.com",
     highlights: [
       "Finance maths as pure functions under 30 tests, asserted against independently derived values",
       "Hand-built SVG charts on a palette validated for colour-vision deficiency",

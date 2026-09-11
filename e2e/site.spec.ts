@@ -42,15 +42,22 @@ test.describe("Portfolio site", () => {
     }
   });
 
-  test("lists every project with a working repo link", async ({ page }) => {
+  test("lists every project with a working repo link, plus a live link where one exists", async ({
+    page,
+  }) => {
     await page.goto("/");
-    const cards = page.locator("#projects a");
-    await expect(cards).toHaveCount(projects.length);
+    const hrefs = await page
+      .locator("#projects a")
+      .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
 
-    const hrefs = await cards.evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
     for (const project of projects) {
       expect(hrefs).toContain(`https://github.com/${profile.github}/${project.repo}`);
+      if (project.live) expect(hrefs).toContain(`${project.live}/`);
     }
+
+    // A deployed project carries both links; the rest carry one.
+    const expected = projects.length + projects.filter((p) => p.live).length;
+    expect(hrefs).toHaveLength(expected);
   });
 
   test("exposes contact links: LinkedIn, email, and GitHub", async ({ page }) => {

@@ -21,30 +21,22 @@ export function Projects() {
       <div className="reveal mt-10 grid gap-5 md:grid-cols-3">
         {projects.map((project) => (
           <TiltCard
-            as="a"
             key={project.name}
-            href={repoUrl(project.repo)}
-            target="_blank"
-            rel="noreferrer"
-            className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6 hover:border-accent/40 hover:bg-card-hover"
+            className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-card p-6 hover:border-accent/40"
           >
             <div
               aria-hidden
               className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <h3 className="text-lg font-bold">{project.name}</h3>
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                className="size-4 text-subtle transition duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M7 17L17 7M17 7H8M17 7v9" />
-              </svg>
+              {project.live && (
+                <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-400">
+                  <span aria-hidden className="size-1.5 rounded-full bg-emerald-400" />
+                  Live
+                </span>
+              )}
             </div>
 
             <p className="mt-1 text-sm font-medium text-accent">{project.tagline}</p>
@@ -68,6 +60,27 @@ export function Projects() {
                   {tech}
                 </span>
               ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {project.live && (
+                <a
+                  href={project.live}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
+                >
+                  Open the live site
+                </a>
+              )}
+              <a
+                href={repoUrl(project.repo)}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold transition hover:border-accent hover:text-accent"
+              >
+                Source
+              </a>
             </div>
           </TiltCard>
         ))}
