@@ -15,6 +15,11 @@
     "not_found_handling": "404-page"
   },
 
+  // The workers.dev subdomain served a third, identical copy of the site
+  // alongside adembrouri.com and the GitHub Pages build. Google counts that as
+  // a duplicate; turning it off leaves one fewer host to disavow.
+  "workers_dev": false,
+
   "observability": {
     "enabled": true
   }
