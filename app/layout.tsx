@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { SITE_URL } from "@/data/site";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -12,7 +14,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// The same static build is served from two hosts: adembrouri.com (Cloudflare)
+// and doudoumi14.github.io (GitHub Pages). Without a canonical link Google sees
+// two identical pages, picks one itself, and reports the other as a duplicate
+// with no user-selected canonical. The tag below ships in both copies and names
+// adembrouri.com as the one to index.
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   title: "Adem Brouri, P.Eng.",
   description:
     "Engineering leadership, technology consulting, and MBA candidate — plus the side projects that keep the technical skills sharp.",
