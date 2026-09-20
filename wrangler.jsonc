@@ -4,6 +4,7 @@
   // Name must match the Worker Cloudflare already provisioned for this repo,
   // otherwise `wrangler deploy` creates a second, unrelated Worker.
   "name": "doudoumi14-github-io",
+  "main": "worker.js",
   "compatibility_date": "2026-09-10",
 
   // This site is `output: "export"` in next.config.ts — a pure static build in
@@ -12,6 +13,10 @@
   // server build that a static export never produces.
   "assets": {
     "directory": "./out",
+    "binding": "ASSETS",
+    // Every request goes through worker.js first so the http-to-https redirect
+    // fires before an asset is served; the script hands anything else to ASSETS.
+    "run_worker_first": true,
     "not_found_handling": "404-page"
   },
 
